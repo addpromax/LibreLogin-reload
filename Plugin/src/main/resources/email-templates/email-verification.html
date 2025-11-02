@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>邮箱验证</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            background-color: #f0f4f8;
+            color: #333;
+        }
+        
+        .email-container {
+            max-width: 600px;
+            margin: 20px auto;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            padding: 30px 20px;
+            text-align: center;
+            color: white;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .header .subtitle {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 40px 30px;
+        }
+        
+        .greeting {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: #4a5568;
+        }
+        
+        .message {
+            font-size: 16px;
+            line-height: 1.8;
+            margin-bottom: 30px;
+            color: #2d3748;
+        }
+        
+        .verification-section {
+            background: #f7fafc;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            margin: 30px 0;
+            border-left: 4px solid #4facfe;
+        }
+        
+        .verification-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 15px;
+        }
+        
+        .verification-code {
+            font-size: 36px;
+            font-weight: bold;
+            color: #4facfe;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 8px;
+            margin: 20px 0;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            border: 2px dashed #4facfe;
+            display: inline-block;
+        }
+        
+        .success-section {
+            background: #f0fff4;
+            border: 1px solid #9ae6b4;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 25px 0;
+        }
+        
+        .success-title {
+            display: flex;
+            align-items: center;
+            font-weight: 600;
+            color: #2f855a;
+            margin-bottom: 10px;
+        }
+        
+        .success-icon {
+            margin-right: 8px;
+            font-size: 18px;
+        }
+        
+        .success-text {
+            color: #2f855a;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .info-box {
+            background: #edf2f7;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 25px 0;
+        }
+        
+        .info-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .info-list li {
+            margin: 8px 0;
+            padding-left: 20px;
+            position: relative;
+            color: #4a5568;
+            font-size: 14px;
+        }
+        
+        .info-list li::before {
+            content: "•";
+            color: #4facfe;
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+        }
+        
+        .steps-section {
+            background: #fef5e7;
+            border: 1px solid #fbd38d;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 25px 0;
+        }
+        
+        .steps-title {
+            display: flex;
+            align-items: center;
+            font-weight: 600;
+            color: #c05621;
+            margin-bottom: 15px;
+        }
+        
+        .steps-icon {
+            margin-right: 8px;
+            font-size: 18px;
+        }
+        
+        .steps-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .steps-list li {
+            margin: 12px 0;
+            padding-left: 30px;
+            position: relative;
+            color: #744210;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .steps-list li::before {
+            content: counter(step-counter);
+            counter-increment: step-counter;
+            position: absolute;
+            left: 0;
+            top: 0;
+            background: #ed8936;
+            color: white;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .steps-list {
+            counter-reset: step-counter;
+        }
+        
+        .footer {
+            background: #2d3748;
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .footer-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        
+        .footer-info {
+            font-size: 14px;
+            opacity: 0.8;
+            margin: 5px 0;
+        }
+        
+        .footer-disclaimer {
+            font-size: 12px;
+            opacity: 0.6;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #4a5568;
+        }
+        
+        .highlight {
+            color: #4facfe;
+            font-weight: 600;
+        }
+        
+        @media (max-width: 600px) {
+            .email-container {
+                margin: 10px;
+            }
+            
+            .content {
+                padding: 30px 20px;
+            }
+            
+            .verification-code {
+                font-size: 28px;
+                letter-spacing: 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <!-- Header -->
+        <div class="header">
+            <h1>📧 邮箱验证</h1>
+            <p class="subtitle">Email Verification</p>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="content">
+            <div class="greeting">
+                欢迎，<span class="highlight">%name%</span>！
+            </div>
+            
+            <div class="message">
+                感谢您选择注册我们的游戏服务器账户！为了完成账户创建并确保邮箱地址的有效性，请使用下面的验证码验证您的邮箱。
+            </div>
+            
+            <!-- Verification Code Section -->
+            <div class="verification-section">
+                <div class="verification-title">
+                    🔑 您的验证码
+                </div>
+                <div class="verification-code">
+                    %code%
+                </div>
+                <p style="font-size: 14px; color: #718096; margin-top: 15px;">
+                    请在 <strong>%timeout%分钟内</strong> 使用此验证码
+                </p>
+            </div>
+            
+            <!-- Next Steps -->
+            <div class="steps-section">
+                <div class="steps-title">
+                    <span class="steps-icon">📋</span>
+                    接下来的步骤
+                </div>
+                <ol class="steps-list">
+                    <li>返回游戏客户端</li>
+                    <li>在验证码输入框中输入上方的6位验证码</li>
+                    <li>点击"验证邮箱"按钮完成注册</li>
+                    <li>开始享受游戏乐趣！</li>
+                </ol>
+            </div>
+            
+            <!-- Success Message -->
+            <div class="success-section">
+                <div class="success-title">
+                    <span class="success-icon">✅</span>
+                    验证完成后
+                </div>
+                <div class="success-text">
+                    您的账户将被成功创建，邮箱将绑定到您的游戏账户。这将为您提供额外的安全保护，包括账户找回功能。
+                </div>
+            </div>
+            
+            <!-- Additional Info -->
+            <div class="info-box">
+                <p style="font-weight: 600; margin-bottom: 15px; color: #2d3748;">📊 注册信息：</p>
+                <ul class="info-list">
+                    <li><strong>服务器：</strong> %server%</li>
+                    <li><strong>玩家名：</strong> %name%</li>
+                    <li><strong>验证码有效期：</strong> %timeout%分钟</li>
+                    <li><strong>邮箱绑定状态：</strong> 等待验证</li>
+                </ul>
+            </div>
+            
+            <div class="message" style="margin-top: 30px; font-size: 14px; color: #718096;">
+                💡 <strong>温馨提示：</strong> 验证码仅用于本次邮箱验证，请勿泄露给他人。如果您没有尝试注册账户，请忽略此邮件。
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <div class="footer-title">
+                %server% 游戏服务器
+            </div>
+            <div class="footer-info">
+                🎮 开启您的游戏冒险之旅
+            </div>
+            <div class="footer-info">
+                安全 • 稳定 • 有趣
+            </div>
+            <div class="footer-disclaimer">
+                此邮件由系统自动发送，请勿直接回复。<br>
+                如有疑问，请联系服务器管理员。
+            </div>
+        </div>
+    </div>
+</body>
+</html>

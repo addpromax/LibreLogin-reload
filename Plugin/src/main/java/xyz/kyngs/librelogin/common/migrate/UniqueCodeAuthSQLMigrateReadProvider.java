@@ -78,6 +78,7 @@ public class UniqueCodeAuthSQLMigrateReadProvider extends SQLMigrateReadProvider
                             null,
                             null,
                             null,
+                            null,
                             null
                     ));
                 } catch (Exception e) {

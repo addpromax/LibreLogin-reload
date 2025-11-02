@@ -261,10 +261,17 @@ public class MessageKeys {
             ConfigurateHelper::getString
     );
 
+    public static final ConfigurationKey<String> ERROR_PASSWORD_TOO_SHORT = new ConfigurationKey<>(
+            "error-password-too-short",
+            "The password is too short! Minimum length is %length% characters.",
+            "This message is displayed when the player tries to register with a password that is too short.",
+            ConfigurateHelper::getString
+    );
+
     public static final ConfigurationKey<String> ERROR_FORBIDDEN_PASSWORD = new ConfigurationKey<>(
             "error-forbidden-password",
-            "The password is too short and/or is not allowed!",
-            "This message is displayed when the player tries to register with a password that is too short or forbidden.",
+            "The password is not allowed! Please choose a different password.",
+            "This message is displayed when the player tries to register with a forbidden (weak) password.",
             ConfigurateHelper::getString
     );
 
@@ -680,7 +687,7 @@ public class MessageKeys {
 
     public static final ConfigurationKey<String> INFO_RESET_PASSWORD_MAIL_SENT = new ConfigurationKey<>(
             "info-reset-password-mail-sent",
-            "Password reset email sent! If you don't see anything in your inbox, check your spam folder. You have 10 minutes to reset your password.",
+            "密码重置邮件已发送！如果您没有在收件箱中看到邮件，请检查垃圾邮件文件夹。您有 10 分钟的时间来重置密码。",
             "This message is displayed when the user executes a command that sends a reset email.",
             ConfigurateHelper::getString
     );
@@ -1176,6 +1183,711 @@ public class MessageKeys {
             "autocomplete.confirm-password-reset",
             "code newPassword newPassword",
             "This hint is displayed when the player starts typing the /confirmpasswordreset command.",
+            ConfigurateHelper::getString
+    );
+
+    /*
+    FancyDialogs Integration Messages
+     */
+
+    public static final ConfigurationKey<String> DIALOG_LOGIN_TITLE = new ConfigurationKey<>(
+            "dialog.login.title",
+            "<gradient:#00ff87:#60efff>登录</gradient>",
+            "The title of the login dialog.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> DIALOG_LOGIN_BODY = new ConfigurationKey<>(
+            "dialog.login.body",
+            "<white>欢迎回来！请输入您的密码以继续游戏。</white>",
+            "The body text of the login dialog.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> DIALOG_LOGIN_PASSWORD_LABEL = new ConfigurationKey<>(
+            "dialog.login.password-label",
+            "<yellow>密码</yellow>",
+            "The label for the password field in login dialog.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> DIALOG_LOGIN_2FA_LABEL = new ConfigurationKey<>(
+            "dialog.login.2fa-label",
+            "<yellow>双因素验证码</yellow>",
+            "The label for the 2FA code field in login dialog (only shown when 2FA is enabled).",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> DIALOG_REGISTER_TITLE = new ConfigurationKey<>(
+            "dialog.register.title",
+            "<gradient:#ff6b6b:#feca57>注册账户</gradient>",
+            "The title of the register dialog.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> DIALOG_REGISTER_BODY = new ConfigurationKey<>(
+            "dialog.register.body",
+            "<white>欢迎来到我们的服务器！请设置一个密码来保护您的账户。</white>",
+            "The body text of the register dialog.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> DIALOG_REGISTER_PASSWORD_LABEL = new ConfigurationKey<>(
+            "dialog.register.password-label",
+            "<yellow>设置密码</yellow>",
+            "The label for the password field in register dialog.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> DIALOG_REGISTER_CONFIRM_LABEL = new ConfigurationKey<>(
+            "dialog.register.confirm-label",
+            "<yellow>确认密码</yellow>",
+            "The label for the password confirmation field in register dialog.",
+            ConfigurateHelper::getString
+    );
+
+    // Register Confirmation Dialog Messages
+    public static final ConfigurationKey<String> DIALOG_REGISTER_CONFIRMATION_TITLE = new ConfigurationKey<>(
+            "dialog.register-confirmation.title",
+            "<gradient:#ff6b6b:#feca57>⚠ 注册确认</gradient>",
+            "The title of the register confirmation dialog.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> DIALOG_REGISTER_CONFIRMATION_BODY = new ConfigurationKey<>(
+            "dialog.register-confirmation.body",
+            """
+                    <red>⚠ 重要提醒 ⚠</red>
+                    
+                    <white>您即将在<bold>不绑定邮箱</bold>的情况下注册账户。</white>
+                    
+                    <yellow>这意味着：</yellow>
+                    <gray>• 如果您忘记密码，将<red>无法找回</red></gray>
+                    <gray>• 账户安全性会<yellow>大大降低</yellow></gray>
+                    
+                    <aqua>建议您选择邮箱注册以保护账户安全！</aqua>
+                    """,
+            "The body text of the register confirmation dialog.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> DIALOG_PASSWORD_RESET_TITLE = new ConfigurationKey<>(
+            "dialog.password-reset.title",
+            "<gradient:#fa8231:#f5cd79>重置密码</gradient>",
+            "The title of the password reset dialog.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> DIALOG_PASSWORD_RESET_BODY = new ConfigurationKey<>(
+            "dialog.password-reset.body",
+            "<white>请输入您收到的重置代码和新密码。</white>",
+            "The body text of the password reset dialog.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> DIALOG_PASSWORD_RESET_TOKEN_LABEL = new ConfigurationKey<>(
+            "dialog.password-reset.token-label",
+            "<yellow>重置代码</yellow>",
+            "The label for the reset token field in password reset dialog.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> DIALOG_PASSWORD_RESET_PASSWORD_LABEL = new ConfigurationKey<>(
+            "dialog.password-reset.password-label",
+            "<yellow>新密码</yellow>",
+            "The label for the new password field in password reset dialog.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> DIALOG_PASSWORD_RESET_CONFIRM_LABEL = new ConfigurationKey<>(
+            "dialog.password-reset.confirm-label",
+            "<yellow>确认新密码</yellow>",
+            "The label for the password confirmation field in password reset dialog.",
+            ConfigurateHelper::getString
+    );
+
+    // Email Status Dialog Messages
+    public static final ConfigurationKey<String> DIALOG_EMAIL_STATUS_TITLE = new ConfigurationKey<>(
+            "dialog.email-status.title",
+            "<gradient:#ff6b6b:#feca57>找回密码</gradient>",
+            "The title of the email status dialog.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> DIALOG_EMAIL_STATUS_BODY_HAS_EMAIL = new ConfigurationKey<>(
+            "dialog.email-status.body-has-email",
+            """
+                    <white>您的账户已绑定邮箱：</white>
+                    
+                    <aqua><bold>%email%</bold></aqua>
+                    
+                    <white>我们将向此邮箱发送密码重置验证码。
+                    请确保您可以访问此邮箱。</white>
+                    """,
+            "The body text shown when user has email bound. Use %email% placeholder for masked email.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> DIALOG_EMAIL_STATUS_BODY_NO_EMAIL = new ConfigurationKey<>(
+            "dialog.email-status.body-no-email",
+            """
+                    <red><bold>⚠ 账户未绑定邮箱 ⚠</bold></red>
+                    
+                    <white>您的账户没有绑定邮箱，无法通过邮箱找回密码。</white>
+                    
+                    <yellow>请联系服务器管理员协助找回密码，或重新注册账户。</yellow>
+                    """,
+            "The body text shown when user has no email bound.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> DIALOG_BUTTON_LOGIN = new ConfigurationKey<>(
+            "dialog.button.login",
+            "<green>登录</green>",
+            "The text of the login button.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> DIALOG_BUTTON_REGISTER = new ConfigurationKey<>(
+            "dialog.button.register",
+            "<green>注册</green>",
+            "The text of the register button.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> DIALOG_BUTTON_RESET_PASSWORD = new ConfigurationKey<>(
+            "dialog.button.reset-password",
+            "<aqua>重置密码</aqua>",
+            "The text of the reset password button.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> DIALOG_BUTTON_FORGOT_PASSWORD = new ConfigurationKey<>(
+            "dialog.button.forgot-password",
+            "<yellow>忘记密码？</yellow>",
+            "The text of the forgot password button in login dialog.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> DIALOG_BUTTON_BACK_TO_LOGIN = new ConfigurationKey<>(
+            "dialog.button.back-to-login",
+            "<gray>返回登录</gray>",
+            "The text of the back to login button.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> DIALOG_BUTTON_CONTINUE_RESET = new ConfigurationKey<>(
+            "dialog.button.continue-reset",
+            "<aqua>继续找回密码</aqua>",
+            "The text of the continue password reset button in email status dialog.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> ERROR_FANCYDIALOGS_VERSION = new ConfigurationKey<>(
+            "error-fancydialogs-version",
+            "<red>FancyDialogs requires Paper 1.21.6 or higher. Falling back to command-based login.</red>",
+            "This message is logged when FancyDialogs is enabled but the server version is too old.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> ERROR_FANCYDIALOGS_NOT_INSTALLED = new ConfigurationKey<>(
+            "error-fancydialogs-not-installed",
+            "<yellow>FancyDialogs is not installed. Falling back to command-based login.</yellow>",
+            "This message is logged when FancyDialogs is enabled in config but the plugin is not installed.",
+            ConfigurateHelper::getString
+    );
+
+    // 2FA Setup Dialog Messages
+    public static final ConfigurationKey<String> DIALOG_2FA_SETUP_TITLE = new ConfigurationKey<>(
+            "dialog.2fa-setup.title",
+            "<gold><b>设置双因素验证</b></gold>",
+            "The title of the 2FA setup dialog.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> DIALOG_2FA_SETUP_BODY = new ConfigurationKey<>(
+            "dialog.2fa-setup.body",
+            """
+                    <white>请使用您的身份验证器应用（如 Google Authenticator）
+                    扫描下方的二维码或手动输入密钥。
+                    
+                    扫描后，输入6位验证码以完成设置。</white>
+                    
+                    <gray>密钥: <yellow>%secret%</yellow></gray>
+                    """,
+            "The body text of the 2FA setup dialog. Use %secret% placeholder for the TOTP secret.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> DIALOG_2FA_SETUP_CODE_LABEL = new ConfigurationKey<>(
+            "dialog.2fa-setup.code-label",
+            "<yellow>验证码</yellow>",
+            "The label for the verification code field in 2FA setup dialog.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> DIALOG_BUTTON_CONFIRM_2FA = new ConfigurationKey<>(
+            "dialog.button.confirm-2fa",
+            "<green>确认</green>",
+            "The text of the confirm button in 2FA setup dialog.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> DIALOG_BUTTON_SKIP_2FA = new ConfigurationKey<>(
+            "dialog.button.skip-2fa",
+            "<gray>跳过</gray>",
+            "The text of the skip button in 2FA setup dialog.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> DIALOG_BUTTON_DISCONNECT = new ConfigurationKey<>(
+            "dialog.button.disconnect",
+            "<red>断开连接</red>",
+            "The text of the disconnect button in login/register dialogs.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> ERROR_2FA_VERIFY_FAILED = new ConfigurationKey<>(
+            "error-2fa-verify-failed",
+            "<red>验证码错误，请重试！</red>",
+            "This message is shown when the 2FA verification code is incorrect.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> ERROR_2FA_ADMIN_CANNOT_SKIP = new ConfigurationKey<>(
+            "error-2fa-admin-cannot-skip",
+            "<red>管理员必须设置双因素验证！</red>",
+            "This message is shown when an admin tries to skip 2FA setup.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> SUCCESS_2FA_SETUP = new ConfigurationKey<>(
+            "success-2fa-setup",
+            "<green>双因素验证设置成功！</green>",
+            "This message is shown when 2FA is successfully set up.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> INFO_2FA_SETUP_REQUIRED = new ConfigurationKey<>(
+            "info-2fa-setup-required",
+            "<yellow>您需要设置双因素验证才能继续。</yellow>",
+            "This message is shown to inform the player that 2FA setup is required.",
+            ConfigurateHelper::getString
+    );
+
+    // Announcement Dialog Messages
+    public static final ConfigurationKey<String> DIALOG_ANNOUNCEMENT_TITLE = new ConfigurationKey<>(
+            "dialog.announcement.title",
+            "<gradient:gold:yellow><b>服务器公告</b></gradient>",
+            "The title of the announcement dialog.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> DIALOG_ANNOUNCEMENT_BODY = new ConfigurationKey<>(
+            "dialog.announcement.body",
+            "%content%",
+            "The body text of the announcement dialog. The %content% placeholder will be replaced with the announcement content from the config.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> DIALOG_BUTTON_CONFIRM_ANNOUNCEMENT = new ConfigurationKey<>(
+            "dialog.button.confirm-announcement",
+            "<green>我已阅读</green>",
+            "The text of the confirm button in announcement dialog.",
+            ConfigurateHelper::getString
+    );
+
+    // Common error messages for dialogs
+    public static final ConfigurationKey<String> ERROR_EMPTY_INPUT = new ConfigurationKey<>(
+            "error-empty-input",
+            "请输入内容后提交！",
+            "This message is shown when required input fields are empty.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> ERROR_USER_DATA = new ConfigurationKey<>(
+            "error-user-data",
+            "用户数据错误！",
+            "This message is shown when user data is corrupted or missing.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> ERROR_FILL_ALL_FIELDS = new ConfigurationKey<>(
+            "error-fill-all-fields",
+            "请填写所有必需字段！",
+            "This message is shown when not all required fields are filled.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> ERROR_LOGIN_FAILED = new ConfigurationKey<>(
+            "error-login-failed",
+            "用户名或密码错误，请重试！",
+            "This message is shown when login fails (password or 2FA incorrect). For security reasons, it doesn't specify which field is wrong.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> ERROR_AUTHORIZATION_FAILED = new ConfigurationKey<>(
+            "error-authorization-failed",
+            "授权失败，请重试或联系管理员！",
+            "This message is shown when player authorization fails after successful login.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> ERROR_PASSWORD_RESET_MISSING_FIELDS = new ConfigurationKey<>(
+            "error-password-reset-missing-fields",
+            "请填写所有字段（重置代码、新密码、确认密码）！",
+            "This message is shown when not all password reset fields are filled.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> ERROR_REGISTER_MISSING_FIELDS = new ConfigurationKey<>(
+            "error-register-missing-fields",
+            "请填写密码和确认密码！",
+            "This message is shown when password fields are not filled during registration.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> ERROR_2FA_MISSING_CODE = new ConfigurationKey<>(
+            "error-2fa-missing-code",
+            "请输入验证码！",
+            "This message is shown when 2FA verification code is not provided.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> ERROR_2FA_NOT_AVAILABLE = new ConfigurationKey<>(
+            "error-2fa-not-available",
+            "双因素验证功能不可用！",
+            "This message is shown when 2FA system is not available.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> ERROR_2FA_RESCAN_FAILED = new ConfigurationKey<>(
+            "error-2fa-rescan-failed",
+            "重新生成二维码失败，请重试！",
+            "This message is shown when 2FA QR code rescan fails.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> ERROR_2FA_SETUP_FAILED = new ConfigurationKey<>(
+            "error-2fa-setup-failed",
+            "双因素验证设置失败，请重试或联系管理员！",
+            "This message is shown when 2FA setup process fails.",
+            ConfigurateHelper::getString
+    );
+
+    /*
+    Email Registration Messages
+     */
+
+    // Email Register Dialog Messages
+    public static final ConfigurationKey<String> DIALOG_EMAIL_REGISTER_TITLE = new ConfigurationKey<>(
+            "dialog.email-register.title",
+            "<gradient:#4fc3f7:#29b6f6>邮箱注册</gradient>",
+            "The title of the email register dialog.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> DIALOG_EMAIL_REGISTER_BODY = new ConfigurationKey<>(
+            "dialog.email-register.body",
+            "<white>请设置您的账户密码并绑定邮箱地址。\n邮箱将用于验证您的身份和找回密码。</white>",
+            "The body text of the email register dialog.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> DIALOG_EMAIL_REGISTER_PASSWORD_LABEL = new ConfigurationKey<>(
+            "dialog.email-register.password-label",
+            "<yellow>设置密码</yellow>",
+            "The label for the password field in email register dialog.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> DIALOG_EMAIL_REGISTER_CONFIRM_LABEL = new ConfigurationKey<>(
+            "dialog.email-register.confirm-label",
+            "<yellow>确认密码</yellow>",
+            "The label for the password confirmation field in email register dialog.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> DIALOG_EMAIL_REGISTER_EMAIL_LABEL = new ConfigurationKey<>(
+            "dialog.email-register.email-label",
+            "<yellow>邮箱地址</yellow>",
+            "The label for the email field in email register dialog.",
+            ConfigurateHelper::getString
+    );
+
+    // Email Verification Dialog Messages
+    public static final ConfigurationKey<String> DIALOG_EMAIL_VERIFICATION_TITLE = new ConfigurationKey<>(
+            "dialog.email-verification.title",
+            "<gradient:#66bb6a:#43a047>邮箱验证</gradient>",
+            "The title of the email verification dialog.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> DIALOG_EMAIL_VERIFICATION_BODY = new ConfigurationKey<>(
+            "dialog.email-verification.body",
+            """
+                    <white>验证邮件已发送到：<aqua>%email%</aqua>
+                    
+                    请查看您的邮箱并输入收到的验证码。
+                    如果没有收到邮件，请检查垃圾邮件文件夹。</white>
+                    
+                    <gray>验证码将在 %timeout% 分钟后过期。</gray>
+                    """,
+            "The body text of the email verification dialog. Use %email% and %timeout% placeholders.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> DIALOG_EMAIL_VERIFICATION_CODE_LABEL = new ConfigurationKey<>(
+            "dialog.email-verification.code-label",
+            "<yellow>验证码</yellow>",
+            "The label for the verification code field in email verification dialog.",
+            ConfigurateHelper::getString
+    );
+
+    // Email Input Dialog Messages (simplified email registration)
+    public static final ConfigurationKey<String> DIALOG_EMAIL_INPUT_TITLE = new ConfigurationKey<>(
+            "dialog.email-input.title",
+            "<gradient:#4fc3f7:#29b6f6>邮箱绑定</gradient>",
+            "The title of the email input dialog.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> DIALOG_EMAIL_INPUT_BODY = new ConfigurationKey<>(
+            "dialog.email-input.body",
+            "<white>请输入您的邮箱地址以完成注册。\n邮箱将用于验证您的身份和找回密码。</white>",
+            "The body text of the email input dialog.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> DIALOG_EMAIL_INPUT_EMAIL_LABEL = new ConfigurationKey<>(
+            "dialog.email-input.email-label",
+            "<yellow>邮箱地址</yellow>",
+            "The label for the email field in email input dialog.",
+            ConfigurateHelper::getString
+    );
+
+    // Email Register Buttons
+    public static final ConfigurationKey<String> DIALOG_BUTTON_EMAIL_REGISTER = new ConfigurationKey<>(
+            "dialog.button.email-register",
+            "<aqua>邮箱注册</aqua>",
+            "The text of the email register button in register dialog.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> DIALOG_BUTTON_EMAIL_SUBMIT = new ConfigurationKey<>(
+            "dialog.button.email-submit",
+            "<green>提交注册</green>",
+            "The text of the submit button in email register dialog.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> DIALOG_BUTTON_VERIFY_EMAIL = new ConfigurationKey<>(
+            "dialog.button.verify-email",
+            "<green>验证邮箱</green>",
+            "The text of the verify button in email verification dialog.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> DIALOG_BUTTON_BACK_TO_REGISTER = new ConfigurationKey<>(
+            "dialog.button.back-to-register",
+            "<gray>返回注册</gray>",
+            "The text of the back to register button.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> DIALOG_BUTTON_CONFIRM_CONTINUE = new ConfigurationKey<>(
+            "dialog.button.confirm-continue",
+            "<red>确认继续注册</red>",
+            "The text of the confirm continue button in register confirmation dialog.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> DIALOG_BUTTON_GO_EMAIL_REGISTER = new ConfigurationKey<>(
+            "dialog.button.go-email-register",
+            "<green>进入邮箱注册</green>",
+            "The text of the go to email register button in register confirmation dialog.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> DIALOG_BUTTON_RESEND_EMAIL = new ConfigurationKey<>(
+            "dialog.button.resend-email",
+            "<yellow>重新发送邮件</yellow>",
+            "The text of the resend email button in email verification dialog.",
+            ConfigurateHelper::getString
+    );
+
+    // Email Registration Error Messages
+    public static final ConfigurationKey<String> ERROR_EMAIL_INVALID_FORMAT = new ConfigurationKey<>(
+            "error-email-invalid-format",
+            "邮箱格式不正确，请输入有效的邮箱地址！",
+            "This message is shown when the email format is invalid.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> ERROR_EMAIL_DOMAIN_BLOCKED = new ConfigurationKey<>(
+            "error-email-domain-blocked",
+            "此邮箱域名不被允许，请使用其他邮箱！",
+            "This message is shown when the email domain is in the blacklist.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> ERROR_EMAIL_DOMAIN_NOT_ALLOWED = new ConfigurationKey<>(
+            "error-email-domain-not-allowed",
+            "此邮箱域名不在允许列表中，请使用允许的邮箱！",
+            "This message is shown when the email domain is not in the whitelist.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> ERROR_EMAIL_ALREADY_USED = new ConfigurationKey<>(
+            "error-email-already-used",
+            "此邮箱已被其他账户使用，请使用其他邮箱！",
+            "This message is shown when the email is already registered by another account.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> ERROR_EMAIL_VERIFICATION_TIMEOUT = new ConfigurationKey<>(
+            "error-email-verification-timeout",
+            "邮箱验证已超时，请重新注册！",
+            "This message is shown when email verification code has expired.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> ERROR_EMAIL_VERIFICATION_INVALID = new ConfigurationKey<>(
+            "error-email-verification-invalid",
+            "验证码错误或已失效，请检查后重试！",
+            "This message is shown when email verification code is incorrect or expired.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> ERROR_EMAIL_REGISTER_DISABLED = new ConfigurationKey<>(
+            "error-email-register-disabled",
+            "邮箱注册功能未启用！",
+            "This message is shown when email registration is disabled in config.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> ERROR_EMAIL_REGISTER_RATE_LIMITED = new ConfigurationKey<>(
+            "error-email-register-rate-limited",
+            "邮箱注册请求过于频繁，请稍后再试！",
+            "This message is shown when email registration is rate limited.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> ERROR_EMAIL_REGISTER_RATE_LIMIT_IP = new ConfigurationKey<>(
+            "error-email-register-rate-limit-ip",
+            "您的IP地址邮箱注册请求过于频繁，请等待 %minutes% 分钟后再试！",
+            "This message is shown when email registration is rate limited by IP address. %minutes% is the remaining time.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> ERROR_EMAIL_REGISTER_RATE_LIMIT_PLAYER = new ConfigurationKey<>(
+            "error-email-register-rate-limit-player",
+            "您的账户邮箱注册请求过于频繁，请等待 %minutes% 分钟后再试！",
+            "This message is shown when email registration is rate limited by player UUID. %minutes% is the remaining time.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> ERROR_EMAIL_REGISTER_RATE_LIMIT_EMAIL = new ConfigurationKey<>(
+            "error-email-register-rate-limit-email",
+            "此邮箱地址注册请求过于频繁，请等待 %minutes% 分钟后再试！",
+            "This message is shown when email registration is rate limited by email address. %minutes% is the remaining time.",
+            ConfigurateHelper::getString
+    );
+
+
+    public static final ConfigurationKey<String> ERROR_EMAIL_MISSING_FIELDS = new ConfigurationKey<>(
+            "error-email-missing-fields",
+            "请填写所有必需字段（密码、确认密码、邮箱）！",
+            "This message is shown when required email registration fields are missing.",
+            ConfigurateHelper::getString
+    );
+
+    // Email Template Management Messages
+    public static final ConfigurationKey<String> INFO_EMAIL_TEMPLATES_RELOADED = new ConfigurationKey<>(
+            "info-email-templates-reloaded",
+            "邮件模板已成功重新加载！",
+            "This message is shown when email templates are successfully reloaded.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> INFO_EMAIL_TEMPLATES_FORCE_RELEASED = new ConfigurationKey<>(
+            "info-email-templates-force-released",
+            "邮件模板已强制重新释放到插件目录！",
+            "This message is shown when email templates are force released to the plugin directory.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> INFO_EMAIL_TEMPLATES_PATH = new ConfigurationKey<>(
+            "info-email-templates-path",
+            "模板路径：%path%",
+            "This message shows the path to email templates directory.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> ERROR_EMAIL_NOT_ENABLED = new ConfigurationKey<>(
+            "error-email-not-enabled",
+            "邮件功能未启用！",
+            "This message is shown when trying to reload email templates but email is not enabled.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> ERROR_EMAIL_HANDLER_NOT_SUPPORTED = new ConfigurationKey<>(
+            "error-email-handler-not-supported",
+            "当前邮件处理器不支持模板重新加载！",
+            "This message is shown when the email handler doesn't support template reloading.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> ERROR_EMAIL_TEMPLATES_RELOAD_FAILED = new ConfigurationKey<>(
+            "error-email-templates-reload-failed",
+            "邮件模板重新加载失败！请查看控制台了解详情。",
+            "This message is shown when email template reloading fails.",
+            ConfigurateHelper::getString
+    );
+
+    // Email Registration Success Messages
+    public static final ConfigurationKey<String> INFO_EMAIL_REGISTER_SENT = new ConfigurationKey<>(
+            "info-email-register-sent",
+            "注册信息已提交，验证邮件已发送到您的邮箱！",
+            "This message is shown when email registration is submitted successfully.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> INFO_EMAIL_VERIFICATION_SUCCESS = new ConfigurationKey<>(
+            "info-email-verification-success",
+            "邮箱验证成功！账户注册完成，正在登录...",
+            "This message is shown when email verification is completed successfully.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> INFO_EMAIL_RESENT = new ConfigurationKey<>(
+            "info-email-resent",
+            "验证邮件已重新发送，请查收！",
+            "This message is shown when verification email is resent successfully.",
+            ConfigurateHelper::getString
+    );
+
+    // Email Content Templates
+    public static final ConfigurationKey<String> EMAIL_REGISTER_VERIFICATION_SUBJECT = new ConfigurationKey<>(
+            "email-register-verification-subject",
+            "验证您在 %server% 的注册",
+            "This is the subject of the registration verification email.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> EMAIL_REGISTER_VERIFICATION_CONTENT = new ConfigurationKey<>(
+            "email-register-verification-content",
+            """
+                    您好 %name%！<br>
+                    欢迎注册 %server%！<br>
+                    <br>
+                    为了完成账户注册，请在游戏中输入以下验证码：<br>
+                    <b><code><h1>%code%</h1></code></b><br>
+                    <br>
+                    此验证码将在 %timeout% 分钟后失效。<br>
+                    如果您没有请求此注册，请忽略此邮件。<br>
+                    """,
+            "This email is sent to the player for registration verification. You can insert any HTML code into this message.",
             ConfigurateHelper::getString
     );
 

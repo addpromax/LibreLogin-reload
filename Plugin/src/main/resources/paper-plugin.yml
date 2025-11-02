@@ -6,6 +6,10 @@ api-version: "1.19"
 
 dependencies:
   server:
+    packetevents:
+      load: "BEFORE"
+      required: false
+      join-classpath: true
     Geyser-Spigot:
       load: "BEFORE"
       required: false
@@ -15,3 +19,12 @@ dependencies:
     LuckPerms:
       load: "BEFORE"
       required: false
+    FancyDialogs:
+      load: "BEFORE"
+      required: false
+      join-classpath: true
+
+permissions:
+  librelogin.force-2fa:
+    description: "Forces the player to set up 2FA (Two-Factor Authentication) after registration"
+    default: op

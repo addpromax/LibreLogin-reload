@@ -68,7 +68,8 @@ public class LogItSQLMigrateReadProvider extends SQLMigrateReadProvider {
                                     ip,
                                     null,
                                     null,
-                                    email
+                                    email,
+                                    null
                             )
                     );
 

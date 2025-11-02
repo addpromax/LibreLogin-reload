@@ -67,6 +67,7 @@ public class CrazyLoginSQLMigrateReadProvider extends SQLMigrateReadProvider {
                                     null,
                                     null,
                                     null,
+                                    null,
                                     null
                             )
                     );

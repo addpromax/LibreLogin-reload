@@ -187,4 +187,19 @@ public interface User {
      */
     void setEmail(@Nullable String email);
 
+    /**
+     * Retrieves the last seen announcement hash for the current user.
+     *
+     * @return the last seen announcement hash, or null if no announcement has been seen
+     */
+    @Nullable
+    String getLastSeenAnnouncementHash();
+
+    /**
+     * Sets the last seen announcement hash for the current user.
+     *
+     * @param hash the last seen announcement hash (MD5)
+     */
+    void setLastSeenAnnouncementHash(@Nullable String hash);
+
 }

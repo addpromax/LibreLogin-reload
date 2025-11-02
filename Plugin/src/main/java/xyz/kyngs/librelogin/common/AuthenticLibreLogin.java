@@ -152,7 +152,7 @@ public abstract class AuthenticLibreLogin<P, S> implements LibreLoginPlugin<P, S
 
     @Override
     public User createUser(UUID uuid, UUID premiumUUID, HashedPassword hashedPassword, String lastNickname, Timestamp joinDate, Timestamp lastSeen, String secret, String ip, Timestamp lastAuthentication, String lastServer, String email) {
-        return new AuthenticUser(uuid, premiumUUID, hashedPassword, lastNickname, joinDate, lastSeen, secret, ip, lastAuthentication, lastServer, email);
+        return new AuthenticUser(uuid, premiumUUID, hashedPassword, lastNickname, joinDate, lastSeen, secret, ip, lastAuthentication, lastServer, email, null);
     }
 
     public void registerDatabaseConnector(DatabaseConnectorRegistration<?, ?> registration, Class<?> clazz) {
@@ -174,14 +174,14 @@ public abstract class AuthenticLibreLogin<P, S> implements LibreLoginPlugin<P, S
 
     @Override
     public boolean validPassword(String password) {
-        var length = password.length() >= configuration.get(MINIMUM_PASSWORD_LENGTH);
-
-        if (!length) {
+        // Check minimum password length (if enabled)
+        var minLength = configuration.get(MINIMUM_PASSWORD_LENGTH);
+        if (minLength > 0 && password.length() < minLength) {
             return false;
         }
 
+        // Check forbidden passwords (weak password detection)
         var upper = password.toUpperCase();
-
         return !forbiddenPasswords.contains(upper);
     }
 
@@ -299,16 +299,24 @@ public abstract class AuthenticLibreLogin<P, S> implements LibreLoginPlugin<P, S
 
         imageProjector = provideImageProjector();
 
-        if (imageProjector != null) {
-            if (!configuration.get(TOTP_ENABLED)) {
-                imageProjector = null;
-                logger.warn("2FA is disabled in the configuration, aborting...");
-            } else {
+        // Initialize TOTP provider if 2FA is enabled, regardless of ImageProjector availability
+        // QR code generation doesn't require ImageProjector, only map display does
+        if (configuration.get(TOTP_ENABLED)) {
+            totpProvider = new AuthenticTOTPProvider(this);
+            logger.info("2FA (TOTP) enabled");
+            
+            // ImageProjector is only needed for map-based QR code display
+            if (imageProjector != null) {
                 imageProjector.enable();
+                logger.info("ImageProjector enabled for map-based QR code display");
+            } else {
+                logger.info("ImageProjector not available, QR codes can be displayed via alternative methods (e.g., FancyDialogs)");
             }
+        } else {
+            totpProvider = null;
+            imageProjector = null;
+            logger.info("2FA is disabled in the configuration");
         }
-
-        totpProvider = imageProjector == null ? null : new AuthenticTOTPProvider(this);
         eMailHandler = configuration.get(MAIL_ENABLED) ? new AuthenticEMailHandler(this) : null;
 
         authorizationProvider = new AuthenticAuthorizationProvider<>(this);

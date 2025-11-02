@@ -115,6 +115,28 @@ public abstract class LibreLoginSQLDatabaseProvider extends AuthenticDatabasePro
         });
     }
 
+    @Override
+    public Collection<User> getByEmail(String email) {
+        plugin.reportMainThread();
+        return connector.runQuery(connection -> {
+            var ps = connection.prepareStatement("SELECT * FROM librepremium_data WHERE LOWER(email)=LOWER(?)");
+
+            ps.setString(1, email);
+
+            var rs = ps.executeQuery();
+
+            var users = new ArrayList<User>();
+
+            User user;
+
+            while ((user = getUserFromResult(rs)) != null) {
+                users.add(user);
+            }
+
+            return users;
+        });
+    }
+
     @Nullable
     private User getUserFromResult(ResultSet rs) throws SQLException {
         if (rs.next()) {
@@ -142,7 +164,8 @@ public abstract class LibreLoginSQLDatabaseProvider extends AuthenticDatabasePro
                     rs.getString("ip"),
                     rs.getTimestamp("last_authentication"),
                     rs.getString("last_server"),
-                    rs.getString("email")
+                    rs.getString("email"),
+                    rs.getString("last_seen_announcement_hash")
             );
         } else return null;
     }
@@ -151,7 +174,7 @@ public abstract class LibreLoginSQLDatabaseProvider extends AuthenticDatabasePro
     public void insertUser(User user) {
         plugin.reportMainThread();
         connector.runQuery(connection -> {
-            var ps = connection.prepareStatement("INSERT INTO librepremium_data(uuid, premium_uuid, hashed_password, salt, algo, last_nickname, joined, last_seen, secret, ip, last_authentication, last_server, email) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            var ps = connection.prepareStatement("INSERT INTO librepremium_data(uuid, premium_uuid, hashed_password, salt, algo, last_nickname, joined, last_seen, secret, ip, last_authentication, last_server, email, last_seen_announcement_hash) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
             insertToStatement(ps, user);
 
@@ -163,7 +186,7 @@ public abstract class LibreLoginSQLDatabaseProvider extends AuthenticDatabasePro
     public void insertUsers(Collection<User> users) {
         plugin.reportMainThread();
         connector.runQuery(connection -> {
-            var ps = connection.prepareStatement("INSERT " + getIgnoreSyntax() + " INTO librepremium_data(uuid, premium_uuid, hashed_password, salt, algo, last_nickname, joined, last_seen, secret, ip, last_authentication, last_server, email) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)" + getIgnoreSuffix());
+            var ps = connection.prepareStatement("INSERT " + getIgnoreSyntax() + " INTO librepremium_data(uuid, premium_uuid, hashed_password, salt, algo, last_nickname, joined, last_seen, secret, ip, last_authentication, last_server, email, last_seen_announcement_hash) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)" + getIgnoreSuffix());
 
             for (User user : users) {
                 insertToStatement(ps, user);
@@ -189,13 +212,14 @@ public abstract class LibreLoginSQLDatabaseProvider extends AuthenticDatabasePro
         ps.setTimestamp(11, user.getLastAuthentication());
         ps.setString(12, user.getLastServer());
         ps.setString(13, user.getEmail());
+        ps.setString(14, user.getLastSeenAnnouncementHash());
     }
 
     @Override
     public void updateUser(User user) {
         plugin.reportMainThread();
         connector.runQuery(connection -> {
-            var ps = connection.prepareStatement("UPDATE librepremium_data SET premium_uuid=?, hashed_password=?, salt=?, algo=?, last_nickname=?, joined=?, last_seen=?, secret=?, ip=?, last_authentication=?, last_server=?, email=? WHERE uuid=?");
+            var ps = connection.prepareStatement("UPDATE librepremium_data SET premium_uuid=?, hashed_password=?, salt=?, algo=?, last_nickname=?, joined=?, last_seen=?, secret=?, ip=?, last_authentication=?, last_server=?, email=?, last_seen_announcement_hash=? WHERE uuid=?");
 
             ps.setString(1, user.getPremiumUUID() == null ? null : user.getPremiumUUID().toString());
             ps.setString(2, user.getHashedPassword() == null ? null : user.getHashedPassword().hash());
@@ -209,7 +233,8 @@ public abstract class LibreLoginSQLDatabaseProvider extends AuthenticDatabasePro
             ps.setTimestamp(10, user.getLastAuthentication());
             ps.setString(11, user.getLastServer());
             ps.setString(12, user.getEmail());
-            ps.setString(13, user.getUuid().toString());
+            ps.setString(13, user.getLastSeenAnnouncementHash());
+            ps.setString(14, user.getUuid().toString());
             ps.executeUpdate();
         });
     }
@@ -261,6 +286,9 @@ public abstract class LibreLoginSQLDatabaseProvider extends AuthenticDatabasePro
             }
             if (!columns.contains("email")) {
                 connection.prepareStatement("ALTER TABLE librepremium_data ADD COLUMN email VARCHAR(255) NULL DEFAULT NULL").executeUpdate();
+            }
+            if (!columns.contains("last_seen_announcement_hash")) {
+                connection.prepareStatement("ALTER TABLE librepremium_data ADD COLUMN last_seen_announcement_hash VARCHAR(32) NULL DEFAULT NULL").executeUpdate();
             }
 
             try {

@@ -38,7 +38,12 @@ public class AuthenticTOTPProvider implements TOTPProvider {
         qrGenerator = new ZxingPngQrGenerator();
         qrGenerator.setImageSize(256);
 
-        verifier = new DefaultCodeVerifier(new DefaultCodeGenerator(), new SystemTimeProvider());
+        // Create verifier with time discrepancy allowance (allows ±1 time window = ±30 seconds)
+        // This helps with server/client time synchronization issues
+        var tempVerifier = new DefaultCodeVerifier(new DefaultCodeGenerator(), new SystemTimeProvider());
+        tempVerifier.setTimePeriod(30); // 30 seconds per time window (standard)
+        tempVerifier.setAllowedTimePeriodDiscrepancy(1); // Allow ±1 time window for time sync issues
+        verifier = tempVerifier;
     }
 
     @Override

@@ -8,3 +8,10 @@ softdepend:
   - Geyser-Spigot
   - floodgate
   - LuckPerms
+  - FancyDialogs
+  - packetevents
+
+permissions:
+  librelogin.force-2fa:
+    description: "Forces the player to set up 2FA (Two-Factor Authentication) after registration"
+    default: op

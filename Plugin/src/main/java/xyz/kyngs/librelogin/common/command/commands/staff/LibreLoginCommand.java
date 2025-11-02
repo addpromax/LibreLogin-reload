@@ -10,6 +10,7 @@ import co.aikar.commands.annotation.*;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.text.Component;
 import xyz.kyngs.librelogin.api.configuration.CorruptedConfigurationException;
 import xyz.kyngs.librelogin.api.database.User;
 import xyz.kyngs.librelogin.api.event.events.AuthenticatedEvent;
@@ -199,6 +200,32 @@ public class LibreLoginCommand<P> extends StaffCommand<P> {
         });
     }
 
+    @Subcommand("reload announcement")
+    @CommandPermission("librepremium.reload.announcement")
+    public CompletionStage<Void> onReloadAnnouncement(Audience audience) {
+        return runAsync(() -> {
+            audience.sendMessage(getMessage("info-reloading"));
+
+            // Only available on Paper
+            if (!(plugin instanceof xyz.kyngs.librelogin.paper.PaperLibreLogin paperPlugin)) {
+                throw new InvalidCommandArgument(Component.text("公告功能仅在Paper服务器上可用"));
+            }
+
+            var announcementManager = paperPlugin.getAnnouncementManager();
+            if (announcementManager == null) {
+                throw new InvalidCommandArgument(Component.text("公告管理器未初始化"));
+            }
+
+            boolean hasChanged = announcementManager.reload();
+            
+            if (hasChanged) {
+                audience.sendMessage(Component.text("§a公告已重新加载，检测到内容变更，所有玩家将在下次登录时看到新公告"));
+            } else {
+                audience.sendMessage(Component.text("§e公告已重新加载，内容无变化"));
+            }
+        });
+    }
+
     @Subcommand("user info")
     @CommandPermission("librepremium.user.info")
     @Syntax("{@@syntax.user-info}")
@@ -284,6 +311,7 @@ public class LibreLoginCommand<P> extends StaffCommand<P> {
             user.setIp(null);
             user.setLastAuthentication(null);
             user.setPremiumUUID(null);
+            user.setEmail(null); // Clear email to prevent "email already in use" issues
             getDatabaseProvider().updateUser(user);
 
             audience.sendMessage(getMessage("info-edited"));
@@ -381,6 +409,7 @@ public class LibreLoginCommand<P> extends StaffCommand<P> {
                     null,
                     null,
                     Timestamp.valueOf(LocalDateTime.now()),
+                    null,
                     null,
                     null
             );

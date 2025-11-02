@@ -55,4 +55,12 @@ public interface ReadDatabaseProvider {
      */
     Collection<User> getByIP(String ip);
 
+    /**
+     * This method finds all players that have the specified email address.
+     *
+     * @param email The email address to search for.
+     * @return A collection of players with the specified email address.
+     */
+    Collection<User> getByEmail(String email);
+
 }

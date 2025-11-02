@@ -59,6 +59,7 @@ public class LoginSecuritySQLMigrateReadProvider extends SQLMigrateReadProvider 
                         null,
                         lastSeen,
                         null,
+                        null,
                         null
                 ));
             }

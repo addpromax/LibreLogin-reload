@@ -243,6 +243,7 @@ public class AuthenticListeners<Plugin extends AuthenticLibreLogin<P, S>, P, S> 
                         ip.getHostAddress(),
                         null,
                         null,
+                        null,
                         null
                 );
             } else {
@@ -258,6 +259,7 @@ public class AuthenticListeners<Plugin extends AuthenticLibreLogin<P, S>, P, S> 
                         Timestamp.valueOf(LocalDateTime.now()),
                         null,
                         ip.getHostAddress(),
+                        null,
                         null,
                         null,
                         null

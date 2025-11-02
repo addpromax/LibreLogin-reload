@@ -54,6 +54,7 @@ public class AuthySQLMigrateReadProvider extends SQLMigrateReadProvider {
                             ip,
                             null,
                             null,
+                            null,
                             null
                     ));
                 } catch (Exception e) {

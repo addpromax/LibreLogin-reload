@@ -24,7 +24,9 @@ import xyz.kyngs.librelogin.api.database.User;
 import xyz.kyngs.librelogin.api.event.exception.EventCancelledException;
 import xyz.kyngs.librelogin.common.AuthenticLibreLogin;
 import xyz.kyngs.librelogin.common.SLF4JLogger;
+import xyz.kyngs.librelogin.common.config.ConfigurationKeys;
 import xyz.kyngs.librelogin.common.image.AuthenticImageProjector;
+import xyz.kyngs.librelogin.paper.image.VirtualMapProjector;
 import xyz.kyngs.librelogin.common.util.CancellableTask;
 import xyz.kyngs.librelogin.paper.protocol.PacketListener;
 
@@ -39,18 +41,34 @@ public class PaperLibreLogin extends AuthenticLibreLogin<Player, World> {
     private final PaperBootstrap bootstrap;
     private PaperListeners listeners;
     private boolean started;
+    private xyz.kyngs.librelogin.paper.dialogs.DialogManager dialogManager;
+    private xyz.kyngs.librelogin.paper.inventory.InventoryManager inventoryManager;
+    private VirtualMapProjector virtualMapProjector;
+    private xyz.kyngs.librelogin.common.config.AnnouncementManager announcementManager;
+    private boolean usingExternalPacketEvents;
 
     public PaperLibreLogin(PaperBootstrap bootstrap) {
         this.bootstrap = bootstrap;
         this.started = false;
+        this.usingExternalPacketEvents = false;
 
-        PacketEvents.setAPI(SpigotPacketEventsBuilder.build(bootstrap));
+        // Check if PacketEvents is already loaded as an external plugin
+        var packetEventsPlugin = Bukkit.getPluginManager().getPlugin("packetevents");
+        if (packetEventsPlugin != null && packetEventsPlugin.isEnabled()) {
+            // PacketEvents is loaded externally, reuse its API instance
+            usingExternalPacketEvents = true;
+            bootstrap.getSLF4JLogger().info("Detected external PacketEvents plugin, using it instead of bundled version");
+        } else {
+            // Use bundled PacketEvents
+            bootstrap.getSLF4JLogger().info("Loading bundled PacketEvents");
+            PacketEvents.setAPI(SpigotPacketEventsBuilder.build(bootstrap));
 
-        PacketEvents.getAPI().getSettings()
-                .checkForUpdates(false)
-                .bStats(false);
+            PacketEvents.getAPI().getSettings()
+                    .checkForUpdates(false)
+                    .bStats(false);
 
-        PacketEvents.getAPI().load();
+            PacketEvents.getAPI().load();
+        }
     }
 
     public PaperBootstrap getBootstrap() {
@@ -116,7 +134,15 @@ public class PaperLibreLogin extends AuthenticLibreLogin<Player, World> {
 
     @Override
     protected void disable() {
-        PacketEvents.getAPI().terminate();
+        // Disable InventoryManager
+        if (inventoryManager != null) {
+            inventoryManager.disable();
+        }
+        
+        // Only terminate PacketEvents if we're using the bundled version
+        if (!usingExternalPacketEvents) {
+            PacketEvents.getAPI().terminate();
+        }
         if (getDatabaseProvider() == null) return; //Not initialized
 
         super.disable();
@@ -158,14 +184,77 @@ public class PaperLibreLogin extends AuthenticLibreLogin<Player, World> {
 
         Bukkit.getPluginManager().registerEvents(listeners, bootstrap);
         Bukkit.getPluginManager().registerEvents(new Blockers(this), bootstrap);
+        
+        // Initialize PacketEvents if we're using the bundled version
+        if (!usingExternalPacketEvents) {
+            try {
+                PacketEvents.getAPI().init();
+                if (getConfiguration().get(ConfigurationKeys.DEBUG)) {
+                    getLogger().debug("PacketEvents initialized successfully");
+                }
+            } catch (Exception e) {
+                getLogger().error("Failed to initialize PacketEvents: " + e.getMessage());
+                if (getConfiguration().get(ConfigurationKeys.DEBUG)) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        
         PacketEvents.getAPI().getEventManager().registerListener(new PacketListener(listeners));
+
+        // Initialize AnnouncementManager for managing announcement.yml  
+        announcementManager = new xyz.kyngs.librelogin.common.config.AnnouncementManager(this);
+        if (announcementManager.initialize()) {
+            getLogger().info("AnnouncementManager initialized successfully");
+        } else {
+            getLogger().warn("AnnouncementManager initialization failed");
+        }
+
+        // Initialize FancyDialogs integration (using Java code configuration only)
+        dialogManager = new xyz.kyngs.librelogin.paper.dialogs.DialogManager(this);
+        dialogManager.initialize();
+
+        // Initialize InventoryManager for hiding/restoring player inventories
+        inventoryManager = new xyz.kyngs.librelogin.paper.inventory.InventoryManager(this);
+        inventoryManager.enable(); // Register packet listener
+        if (getConfiguration().get(ConfigurationKeys.DEBUG)) {
+            getLogger().debug("InventoryManager initialized and enabled");
+        }
 
         started = true;
     }
 
+    /**
+     * 获取虚拟地图投影器实例
+     * 
+     * @return VirtualMapProjector实例，如果未初始化则返回null
+     */
+    public VirtualMapProjector getVirtualMapProjector() {
+        return virtualMapProjector;
+    }
+
+    /**
+     * Gets the announcement manager instance.
+     *
+     * @return the announcement manager, or null if not initialized
+     */
+    public xyz.kyngs.librelogin.common.config.AnnouncementManager getAnnouncementManager() {
+        return announcementManager;
+    }
+
+
     @Override
     public void authorize(Player player, User user, Audience audience) {
         try {
+            // Clean up virtual map data
+            if (virtualMapProjector != null) {
+                virtualMapProjector.cleanupVirtualMap(player);
+            }
+
+            // Restore player inventory if it was hidden
+            if (inventoryManager != null && inventoryManager.isInventoryHidden(player)) {
+                delay(() -> inventoryManager.restoreInventory(player), 100);
+            }
 
             var location = listeners.getSpawnLocationCache().getIfPresent(player);
 
@@ -208,7 +297,25 @@ public class PaperLibreLogin extends AuthenticLibreLogin<Player, World> {
 
     @Override
     protected AuthenticImageProjector<Player, World> provideImageProjector() {
-        return null;
+        try {
+            // PacketEvents API is available after load() in constructor
+            // It will be fully initialized with init() later in enable()
+            if (PacketEvents.getAPI() == null) {
+                getLogger().warn("PacketEvents API is not available, ImageProjector will not be available");
+                return null;
+            }
+            
+            // 创建VirtualMapProjector作为主要的地图投影器
+            virtualMapProjector = new VirtualMapProjector(this);
+            // Note: virtualMapProjector.enable() is called later in AuthenticLibreLogin.enable()
+            return virtualMapProjector;
+        } catch (Exception e) {
+            getLogger().error("Failed to initialize VirtualMapProjector: " + e.getMessage());
+            if (getConfiguration().get(ConfigurationKeys.DEBUG)) {
+                e.printStackTrace();
+            }
+            return null;
+        }
     }
 
     @Override
@@ -234,5 +341,23 @@ public class PaperLibreLogin extends AuthenticLibreLogin<Player, World> {
     @Override
     public Audience getAudienceFromIssuer(CommandIssuer issuer) {
         return ((BukkitCommandIssuer) issuer).getIssuer();
+    }
+
+    /**
+     * Gets the FancyDialogs dialog manager.
+     *
+     * @return the dialog manager, or null if not initialized
+     */
+    public xyz.kyngs.librelogin.paper.dialogs.DialogManager getDialogManager() {
+        return dialogManager;
+    }
+
+    /**
+     * Gets the inventory manager for hiding/restoring player inventories.
+     *
+     * @return the inventory manager, or null if not initialized
+     */
+    public xyz.kyngs.librelogin.paper.inventory.InventoryManager getInventoryManager() {
+        return inventoryManager;
     }
 }

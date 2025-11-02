@@ -26,8 +26,9 @@ public class AuthenticUser implements User {
     private Timestamp lastAuthentication;
     private String lastServer;
     private String email;
+    private String lastSeenAnnouncementHash;
 
-    public AuthenticUser(UUID uuid, UUID premiumUUID, HashedPassword hashedPassword, String lastNickname, Timestamp joinDate, Timestamp lastSeen, String secret, String ip, Timestamp lastAuthentication, String lastServer, String email) {
+    public AuthenticUser(UUID uuid, UUID premiumUUID, HashedPassword hashedPassword, String lastNickname, Timestamp joinDate, Timestamp lastSeen, String secret, String ip, Timestamp lastAuthentication, String lastServer, String email, String lastSeenAnnouncementHash) {
         this.uuid = uuid;
         this.premiumUUID = premiumUUID;
         this.hashedPassword = hashedPassword;
@@ -39,6 +40,7 @@ public class AuthenticUser implements User {
         this.lastAuthentication = lastAuthentication;
         this.lastServer = lastServer;
         this.email = email;
+        this.lastSeenAnnouncementHash = lastSeenAnnouncementHash;
     }
 
     public Timestamp getLastAuthentication() {
@@ -146,6 +148,16 @@ public class AuthenticUser implements User {
 
     public void setLastServer(String lastServer) {
         this.lastServer = lastServer;
+    }
+
+    @Override
+    public String getLastSeenAnnouncementHash() {
+        return lastSeenAnnouncementHash;
+    }
+
+    @Override
+    public void setLastSeenAnnouncementHash(String lastSeenAnnouncementHash) {
+        this.lastSeenAnnouncementHash = lastSeenAnnouncementHash;
     }
 
 }

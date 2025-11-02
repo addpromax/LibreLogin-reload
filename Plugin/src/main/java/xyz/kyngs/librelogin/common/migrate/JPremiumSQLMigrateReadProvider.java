@@ -74,6 +74,7 @@ public class JPremiumSQLMigrateReadProvider extends SQLMigrateReadProvider {
                             null,
                             null,
                             null,
+                            null,
                             null
                     ));
 

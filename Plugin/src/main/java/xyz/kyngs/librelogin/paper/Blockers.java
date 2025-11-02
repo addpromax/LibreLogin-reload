@@ -7,6 +7,7 @@
 package xyz.kyngs.librelogin.paper;
 
 import io.papermc.paper.event.player.AsyncChatEvent;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
@@ -29,11 +30,13 @@ import static xyz.kyngs.librelogin.common.config.ConfigurationKeys.ALLOWED_COMMA
 
 public class Blockers implements Listener {
 
+    private final PaperLibreLogin plugin;
     private final AuthorizationProvider<Player> authorizationProvider;
     private final HoconPluginConfiguration configuration;
     private final ServerHandler<Player, World> serverHandler;
 
     public Blockers(PaperLibreLogin plugin) {
+        this.plugin = plugin;
         this.authorizationProvider = plugin.getAuthorizationProvider();
         this.configuration = plugin.getConfiguration();
         this.serverHandler = plugin.getServerHandler();
@@ -141,6 +144,31 @@ public class Blockers implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void onDrop(PlayerDropItemEvent event) {
+        Player player = event.getPlayer();
+        
+        // 🔧 增强调试和修复地图类型检测
+        if (plugin.getConfiguration().get(xyz.kyngs.librelogin.common.config.ConfigurationKeys.DEBUG)) {
+            plugin.getLogger().debug("=== BLOCKER DROP DEBUG ===");
+            plugin.getLogger().debug("Player: " + player.getName() + " - Blocker checking drop");
+            plugin.getLogger().debug("Item type: " + event.getItemDrop().getItemStack().getType());
+        }
+        
+        // Allow dropping map for 2FA setup (check both MAP types)
+        if (event.getItemDrop().getItemStack().getType() == Material.FILLED_MAP ||
+            event.getItemDrop().getItemStack().getType() == Material.MAP) {
+            var dialogManager = plugin.getDialogManager();
+            if (dialogManager != null && dialogManager.hasPendingTwoFactorSetup(player)) {
+                if (plugin.getConfiguration().get(xyz.kyngs.librelogin.common.config.ConfigurationKeys.DEBUG)) {
+                    plugin.getLogger().debug("✅ Allowing map drop for 2FA setup - player: " + player.getName());
+                }
+                // This is a map drop for 2FA setup, don't cancel
+                return;
+            }
+        }
+        
+        if (plugin.getConfiguration().get(xyz.kyngs.librelogin.common.config.ConfigurationKeys.DEBUG)) {
+            plugin.getLogger().debug("Blocker: Checking if should cancel drop for player: " + player.getName());
+        }
         cancelIfNeeded(event);
     }
 

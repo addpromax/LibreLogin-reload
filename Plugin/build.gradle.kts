@@ -58,6 +58,7 @@ mcupload {
 
 repositories {
     // mavenLocal()
+    maven { url = uri("https://oss.sonatype.org/content/repositories/snapshots/") }
     maven { url = uri("https://repo.opencollab.dev/maven-snapshots/") }
     maven { url = uri("https://repo.papermc.io/repository/maven-public/") }
     maven { url = uri("https://hub.spigotmc.org/nexus/") }
@@ -68,6 +69,7 @@ repositories {
     maven { url = uri("https://jitpack.io/") }
     maven { url = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/") }
     maven { url = uri("https://repo.codemc.io/repository/maven-releases/") }
+    maven { url = uri("https://repo.fancyinnovations.com/releases") }
 }
 
 blossom {
@@ -96,8 +98,9 @@ tasks.withType<ShadowJar> {
     relocate("org.spongepowered.configurate", "xyz.kyngs.librelogin.lib.configurate")
     relocate("net.byteflux.libby", "xyz.kyngs.librelogin.lib.libby")
     relocate("org.postgresql", "xyz.kyngs.librelogin.lib.postgresql")
-    relocate("com.github.retrooper.packetevents", "xyz.kyngs.librelogin.lib.packetevents.api")
-    relocate("io.github.retrooper.packetevents", "xyz.kyngs.librelogin.lib.packetevents.platform")
+    // PacketEvents is an external plugin dependency, should NOT be relocated
+    // relocate("com.github.retrooper.packetevents", "xyz.kyngs.librelogin.lib.packetevents.api")
+    // relocate("io.github.retrooper.packetevents", "xyz.kyngs.librelogin.lib.packetevents.platform")
 }
 
 java {
@@ -115,9 +118,6 @@ libby {
     excludeDependency("org.checkerframework:.*:.*")
     excludeDependency("com.google.errorprone:.*:.*")
     excludeDependency("com.google.protobuf:.*:.*")
-
-    // Often redeploys the same version, so calculating checksum causes false flags
-    noChecksumDependency("com.github.retrooper.packetevents:.*:.*")
 }
 
 configurations.all {
@@ -175,7 +175,7 @@ dependencies {
     compileOnly("net.luckperms:api:5.4")
 
     //Bungeecord
-    compileOnly("net.md-5:bungeecord-api:1.21-R0.1-SNAPSHOT")
+    compileOnly("net.md-5:bungeecord-api:1.21-R0.4")
     compileOnly("com.github.ProxioDev.ValioBungee:RedisBungee-Bungee:0.12.5")
     libby("net.kyori:adventure-platform-bungeecord:4.1.2")
 
@@ -187,10 +187,14 @@ dependencies {
     //Paper
     compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
     //compileOnly "com.comphenix.protocol:ProtocolLib:5.1.0"
-    libby("com.github.retrooper:packetevents-spigot:2.7.0")
+    compileOnly("com.github.retrooper:packetevents-spigot:2.7.0")
     compileOnly("io.netty:netty-transport:4.1.108.Final")
     compileOnly("com.mojang:datafixerupper:5.0.28") //I hate this so much
     compileOnly("org.apache.logging.log4j:log4j-core:2.23.1")
+    
+    //FancyDialogs (soft dependency for Paper 1.21.6+)
+    // Using local lib jar file for compilation
+    compileOnly(files("../lib/FancyDialogs-0.0.25.jar"))
 
     //Libby
     implementation("xyz.kyngs.libby:libby-bukkit:1.6.0")

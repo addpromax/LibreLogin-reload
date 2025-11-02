@@ -51,4 +51,15 @@ public interface AuthorizationProvider<P> {
      * @return whether the code is valid.
      */
     boolean confirmTwoFactorAuth(P player, Integer code, User user);
+
+    /**
+     * Starts the 2FA setup process for registration flow without moving player to limbo.
+     * This method is specifically designed for new user registration where the player
+     * should remain in the current world while setting up 2FA.
+     *
+     * @param user The user.
+     * @param player The player.
+     * @param data The TOTP data containing the secret and QR code.
+     */
+    void beginRegistrationTwoFactorAuth(User user, P player, xyz.kyngs.librelogin.api.totp.TOTPData data);
 }

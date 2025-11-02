@@ -336,6 +336,29 @@ public class ConfigurationKeys {
             ConfigurateHelper::getInt
     );
 
+    public static final ConfigurationKey<Boolean> TOTP_FORCE_ON_REGISTER = new ConfigurationKey<>(
+            "totp.force-on-register",
+            false,
+            """
+                    Should we force players with specific permission to set up 2FA after registration?
+                    If enabled, players with the permission will be shown a 2FA setup dialog/map after registering.
+                    Permission node: librelogin.force-2fa (default: OP)
+                    """,
+            ConfigurateHelper::getBoolean
+    );
+
+    public static final ConfigurationKey<String> TOTP_QR_DISPLAY_MODE = new ConfigurationKey<>(
+            "totp.qr-display-mode",
+            "dialog",
+            """
+                    Choose how to display QR codes for 2FA setup:
+                    - "dialog": Use FancyDialogs to display QR code (recommended if FancyDialogs is available)
+                    - "map": Use traditional map display (requires PacketEvents/ImageProjector)
+                    If the selected mode is not available, it will automatically fall back to the other mode.
+                    """,
+            ConfigurateHelper::getString
+    );
+
     public static final ConfigurationKey<Boolean> MAIL_ENABLED = new ConfigurationKey<>(
             "mail.enabled",
             false,
@@ -378,11 +401,177 @@ public class ConfigurationKeys {
             "The email to use as a sender in the From field.",
             ConfigurateHelper::getString
     );
+    
+    // SMTP Security Configuration Keys
+    public static final ConfigurationKey<Boolean> MAIL_SSL_ENABLED = new ConfigurationKey<>(
+            "mail.ssl.enabled",
+            true,
+            """
+                    Enable SSL/TLS connection for SMTP.
+                    For port 465 (Gmail, QQ Mail, etc.), this should typically be true.
+                    For port 587 with StartTLS, this can be false.
+                    """,
+            ConfigurateHelper::getBoolean
+    );
+    
+    public static final ConfigurationKey<Boolean> MAIL_STARTTLS_ENABLED = new ConfigurationKey<>(
+            "mail.starttls.enabled",
+            false,
+            """
+                    Enable StartTLS for SMTP connection.
+                    For port 587 (most modern SMTP servers), this should be true.
+                    For port 465 with SSL, this should be false.
+                    """,
+            ConfigurateHelper::getBoolean
+    );
+    
+    public static final ConfigurationKey<Boolean> MAIL_STARTTLS_REQUIRED = new ConfigurationKey<>(
+            "mail.starttls.required",
+            false,
+            """
+                    Require StartTLS for SMTP connection.
+                    When starttls.enabled is true, this enforces that the connection must use StartTLS.
+                    Recommended to be true for security when using StartTLS.
+                    """,
+            ConfigurateHelper::getBoolean
+    );
+    
+    public static final ConfigurationKey<Boolean> MAIL_SSL_CHECK_SERVER_IDENTITY = new ConfigurationKey<>(
+            "mail.ssl.check-server-identity",
+            true,
+            """
+                    Check server identity for SSL connections.
+                    This verifies that the server certificate matches the hostname.
+                    Recommended to be true for security, but can be disabled for self-signed certificates.
+                    """,
+            ConfigurateHelper::getBoolean
+    );
+    
+    public static final ConfigurationKey<Integer> MAIL_CONNECTION_TIMEOUT = new ConfigurationKey<>(
+            "mail.connection-timeout",
+            10000,
+            """
+                    Connection timeout for SMTP server in milliseconds.
+                    Default is 10000 (10 seconds). Increase if you have a slow network connection.
+                    """,
+            ConfigurateHelper::getInt
+    );
+    
+    public static final ConfigurationKey<Integer> MAIL_READ_TIMEOUT = new ConfigurationKey<>(
+            "mail.read-timeout",
+            10000,
+            """
+                    Read timeout for SMTP server responses in milliseconds.
+                    Default is 10000 (10 seconds). Increase if the server responds slowly.
+                    """,
+            ConfigurateHelper::getInt
+    );
+
+    // Email Registration Configuration Keys
+    public static final ConfigurationKey<Boolean> EMAIL_REGISTER_ENABLED = new ConfigurationKey<>(
+            "mail.register.enabled",
+            false,
+            """
+                    Should we enable email registration feature?
+                    When enabled, players can register using their email address for verification.
+                    This requires mail.enabled to be true.
+                    """,
+            ConfigurateHelper::getBoolean
+    );
+
+    public static final ConfigurationKey<Boolean> EMAIL_REGISTER_FORCE = new ConfigurationKey<>(
+            "mail.register.force",
+            false,
+            """
+                    Should we force players to use email registration?
+                    When enabled, the regular register button will be hidden and only email registration will be available.
+                    This requires mail.register.enabled to be true.
+                    """,
+            ConfigurateHelper::getBoolean
+    );
+
+    public static final ConfigurationKey<Integer> EMAIL_VERIFICATION_TIMEOUT = new ConfigurationKey<>(
+            "mail.register.verification-timeout",
+            300,
+            """
+                    Time in seconds after which email verification codes expire.
+                    Players must complete email verification within this time after registration.
+                    Default is 300 seconds (5 minutes).
+                    """,
+            ConfigurateHelper::getInt
+    );
+
+    public static final ConfigurationKey<Integer> EMAIL_RESEND_COOLDOWN = new ConfigurationKey<>(
+            "mail.register.resend-cooldown",
+            60,
+            """
+                    Time in seconds before the "resend email" button becomes available.
+                    This prevents email spam while allowing users to request a new verification code.
+                    Default is 60 seconds (1 minute).
+                    """,
+            ConfigurateHelper::getInt
+    );
+
+    public static final ConfigurationKey<List<String>> EMAIL_DOMAIN_WHITELIST = new ConfigurationKey<>(
+            "mail.register.domain-whitelist",
+            List.of(),
+            """
+                    List of allowed email domains for registration (e.g. gmail.com, outlook.com).
+                    If empty, all domains are allowed (unless blacklisted).
+                    Example: ["gmail.com", "outlook.com", "company.com"]
+                    """,
+            ConfigurateHelper::getStringList
+    );
+
+    public static final ConfigurationKey<List<String>> EMAIL_DOMAIN_BLACKLIST = new ConfigurationKey<>(
+            "mail.register.domain-blacklist",
+            List.of("10minutemail.com", "guerrillamail.com", "mailinator.com"),
+            """
+                    List of blocked email domains for registration.
+                    Players cannot register with email addresses from these domains.
+                    Default includes common temporary email providers.
+                    """,
+            ConfigurateHelper::getStringList
+    );
+
+    public static final ConfigurationKey<Boolean> EMAIL_REGISTER_CHECK_DUPLICATES = new ConfigurationKey<>(
+            "mail.register.check-duplicates",
+            true,
+            """
+                    Should we prevent multiple accounts from using the same email address?
+                    When enabled, each email can only be associated with one registered account.
+                    """,
+            ConfigurateHelper::getBoolean
+    );
+
+    public static final ConfigurationKey<Integer> EMAIL_REGISTER_RATE_LIMIT_MINUTES = new ConfigurationKey<>(
+            "mail.register.rate-limit-minutes",
+            5,
+            """
+                    Rate limit for email registration attempts per IP/player in minutes.
+                    Players can only attempt email registration once per this time period.
+                    This helps prevent spam and abuse. Default is 5 minutes.
+                    """,
+            ConfigurateHelper::getInt
+    );
+
+
+    public static final ConfigurationKey<Boolean> MAIL_USE_HTML_TEMPLATES = new ConfigurationKey<>(
+            "mail.use-html-templates",
+            true,
+            """
+                    Whether to use HTML email templates for better visual appearance.
+                    When enabled, emails will be sent using customizable HTML templates
+                    located in the 'email-templates' folder within the plugin directory.
+                    Templates can be modified to match your server's branding.
+                    """,
+            ConfigurateHelper::getBoolean
+    );
 
     private static final ConfigurationKey<?> MAIL = ConfigurationKey.getComment(
             "mail",
             """
-                    This section is used for configuring the email password recovery feature.
+                    This section is used for configuring the email features including password recovery and email registration.
                     """
     );
     public static final ConfigurationKey<Boolean> ALLOW_PROXY_CONNECTIONS = new ConfigurationKey<>(
@@ -400,4 +589,76 @@ public class ConfigurationKeys {
             "!!THIS OPTION IS IRRELEVANT WHEN USING PAPER!! Defines port(s) that limbo server can be bounded to.",
             ConfigurateHelper::getString
     );
+
+    private static final ConfigurationKey<?> FANCYDIALOGS = ConfigurationKey.getComment(
+            "fancydialogs",
+            """
+                    This section is used for configuring FancyDialogs integration.
+                    FancyDialogs provides a modern dialog-based login interface.
+                    !! ONLY AVAILABLE ON PAPER 1.21.6+ !!
+                    """
+    );
+
+    public static final ConfigurationKey<Boolean> USE_FANCYDIALOGS = new ConfigurationKey<>(
+            "fancydialogs.enabled",
+            true,
+            """
+                    Should we use FancyDialogs for login/register interface?
+                    This provides a modern dialog-based UI instead of command-based login.
+                    Requirements:
+                    - Paper server version 1.21.6 or higher
+                    - FancyDialogs plugin installed
+                    If requirements are not met, will automatically fallback to command-based login.
+                    """,
+            ConfigurateHelper::getBoolean
+    );
+
+    public static final ConfigurationKey<Boolean> FANCYDIALOGS_CLOSE_WITH_ESCAPE = new ConfigurationKey<>(
+            "fancydialogs.close-with-escape",
+            false,
+            """
+                    Should players be able to close login/register dialogs with the Escape key?
+                    For security reasons, it is recommended to keep this disabled.
+                    """,
+            ConfigurateHelper::getBoolean
+    );
+
+    private static final ConfigurationKey<?> ANNOUNCEMENT = ConfigurationKey.getComment(
+            "announcement",
+            """
+                    This section is used for configuring the server announcement system.
+                    Players will see the announcement dialog after successful login.
+                    """
+    );
+
+    public static final ConfigurationKey<Boolean> ANNOUNCEMENT_ENABLED = new ConfigurationKey<>(
+            "announcement.enabled",
+            false,
+            """
+                    Should we show announcement dialogs to players after login?
+                    This requires FancyDialogs integration to be available.
+                    """,
+            ConfigurateHelper::getBoolean
+    );
+
+    public static final ConfigurationKey<Boolean> ANNOUNCEMENT_AUTO_CREATE_FILE = new ConfigurationKey<>(
+            "announcement.auto-create-file",
+            true,
+            """
+                    Should we automatically create the announcement.yml file if it doesn't exist?
+                    The file will be created in the plugin data folder and can be edited by admins.
+                    """,
+            ConfigurateHelper::getBoolean
+    );
+
+    public static final ConfigurationKey<Integer> ANNOUNCEMENT_DELAY = new ConfigurationKey<>(
+            "announcement.delay",
+            2000,
+            """
+                    The delay in milliseconds before showing the announcement after successful login.
+                    This gives time for the player to fully load before showing the dialog.
+                    """,
+            ConfigurateHelper::getInt
+    );
+
 }

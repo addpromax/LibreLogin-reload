@@ -27,6 +27,7 @@ import xyz.kyngs.librelogin.common.command.commands.premium.PremiumConfirmComman
 import xyz.kyngs.librelogin.common.command.commands.premium.PremiumDisableCommand;
 import xyz.kyngs.librelogin.common.command.commands.premium.PremiumEnableCommand;
 import xyz.kyngs.librelogin.common.command.commands.staff.LibreLoginCommand;
+import xyz.kyngs.librelogin.common.command.commands.staff.ReloadEmailTemplatesCommand;
 import xyz.kyngs.librelogin.common.command.commands.tfa.TwoFactorAuthCommand;
 import xyz.kyngs.librelogin.common.command.commands.tfa.TwoFactorConfirmCommand;
 import xyz.kyngs.librelogin.common.util.RateLimiter;
@@ -117,6 +118,7 @@ public class CommandProvider<P, S> extends AuthenticHandler<P, S> {
             manager.registerCommand(new VerifyEMailCommand<>(plugin));
             manager.registerCommand(new ResetPasswordViaEMailCommand<>(plugin));
             manager.registerCommand(new ConfirmPasswordReset<>(plugin));
+            manager.registerCommand(new ReloadEmailTemplatesCommand<>(plugin));
         }
 
     }
