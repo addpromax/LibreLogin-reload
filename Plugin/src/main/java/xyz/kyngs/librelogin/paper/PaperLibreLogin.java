@@ -21,7 +21,6 @@ import org.bukkit.World;
 import org.bukkit.entity.Player;
 import xyz.kyngs.librelogin.api.Logger;
 import xyz.kyngs.librelogin.api.database.User;
-import xyz.kyngs.librelogin.api.event.exception.EventCancelledException;
 import xyz.kyngs.librelogin.common.AuthenticLibreLogin;
 import xyz.kyngs.librelogin.common.SLF4JLogger;
 import xyz.kyngs.librelogin.common.config.ConfigurationKeys;
@@ -178,6 +177,27 @@ public class PaperLibreLogin extends AuthenticLibreLogin<Player, World> {
             var player = event.getPlayer();
             if (player == null) return;
             player.setInvisible(false);
+            
+            // For PREMIUM and SESSION login, we need to check announcement and open menu
+            // because authorize() is not called for these cases
+            if (event.getReason() == xyz.kyngs.librelogin.api.event.events.AuthenticatedEvent.AuthenticationReason.PREMIUM ||
+                event.getReason() == xyz.kyngs.librelogin.api.event.events.AuthenticatedEvent.AuthenticationReason.SESSION) {
+                
+                var user = event.getUser();
+                if (user == null) {
+                    return;
+                }
+                
+                if (player instanceof org.bukkit.entity.Player bukkitPlayer) {
+                    var authProvider = getAuthorizationProvider();
+                    if (authProvider instanceof xyz.kyngs.librelogin.common.authorization.AuthenticAuthorizationProvider) {
+                        // Call checkAndShowAnnouncement for premium/session login
+                        // This will handle both announcement and CustomScreenMenu
+                        var authenticProvider = (xyz.kyngs.librelogin.common.authorization.AuthenticAuthorizationProvider<org.bukkit.entity.Player, org.bukkit.World>) authProvider;
+                        authenticProvider.checkAndShowAnnouncementForAuthenticatedEvent(user, bukkitPlayer);
+                    }
+                }
+            }
         });
 
         listeners = new PaperListeners(this);
@@ -242,39 +262,26 @@ public class PaperLibreLogin extends AuthenticLibreLogin<Player, World> {
         return announcementManager;
     }
 
-
     @Override
     public void authorize(Player player, User user, Audience audience) {
-        try {
-            // Clean up virtual map data
-            if (virtualMapProjector != null) {
-                virtualMapProjector.cleanupVirtualMap(player);
-            }
+        // Clean up virtual map data
+        if (virtualMapProjector != null) {
+            virtualMapProjector.cleanupVirtualMap(player);
+        }
 
-            // Restore player inventory if it was hidden
-            if (inventoryManager != null && inventoryManager.isInventoryHidden(player)) {
-                delay(() -> inventoryManager.restoreInventory(player), 100);
-            }
+        // Restore player inventory if it was hidden
+        if (inventoryManager != null && inventoryManager.isInventoryHidden(player)) {
+            delay(() -> inventoryManager.restoreInventory(player), 100);
+        }
 
-            var location = listeners.getSpawnLocationCache().getIfPresent(player);
-
-            if (location == null) {
-                var world = getServerHandler().chooseLobbyServer(user, player, true, false);
-
-                if (world == null) {
-                    getPlatformHandle().kick(player, getMessages().getMessage("kick-no-lobby"));
-                    return;
-                }
-
-                location = world.getSpawnLocation();
-            } else {
-                listeners.getSpawnLocationCache().invalidate(player);
-            }
-
-            var finalLocation = location;
-            PaperUtil.runSyncAndWait(() -> player.teleportAsync(finalLocation), this);
-
-        } catch (EventCancelledException ignored) {}
+        // REMOVED: No longer teleporting players after authentication
+        // Players stay at their current location
+        // var location = listeners.getSpawnLocationCache().getIfPresent(player);
+        // if (location != null) {
+        //     listeners.getSpawnLocationCache().invalidate(player);
+        //     var finalLocation = location;
+        //     PaperUtil.runSyncAndWait(() -> player.teleportAsync(finalLocation), this);
+        // }
     }
 
     @Override

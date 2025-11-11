@@ -374,6 +374,153 @@ public class DialogManager implements Listener {
     }
 
     /**
+     * Opens CustomScreenMenu for the player if enabled in configuration.
+     * This method can be called from AuthenticAuthorizationProvider.
+     *
+     * @param player the player to open the menu for
+     */
+    public void openCustomScreenMenu(org.bukkit.entity.Player player) {
+        if (!isAvailable()) {
+            return;
+        }
+
+        Boolean enabled = plugin.getConfiguration().get(ConfigurationKeys.CUSTOM_SCREEN_MENU_ENABLED);
+        if (enabled == null || !enabled) {
+            return;
+        }
+
+        String menuName = plugin.getConfiguration().get(ConfigurationKeys.CUSTOM_SCREEN_MENU_NAME);
+        if (menuName == null || menuName.trim().isEmpty()) {
+            plugin.getLogger().warn("CustomScreenMenu menu name is not configured");
+            return;
+        }
+
+        Integer delayConfig = plugin.getConfiguration().get(ConfigurationKeys.CUSTOM_SCREEN_MENU_DELAY);
+        int delay = delayConfig != null ? delayConfig : 500;
+        long delayTicks = delay / 50;
+
+        // Use main thread for command execution
+        org.bukkit.Bukkit.getScheduler().runTaskLater(plugin.getBootstrap(), () -> {
+            if (!player.isOnline()) {
+                return;
+            }
+
+            if (!plugin.getAuthorizationProvider().isAuthorized(player)) {
+                return;
+            }
+
+            org.bukkit.plugin.Plugin customScreenMenuPlugin = org.bukkit.Bukkit.getPluginManager().getPlugin("CustomScreenMenu");
+            if (customScreenMenuPlugin == null || !customScreenMenuPlugin.isEnabled()) {
+                plugin.getLogger().warn("CustomScreenMenu plugin is not installed or not enabled");
+                return;
+            }
+
+            try {
+                // Try to use CustomScreenMenu API first
+                boolean opened = tryOpenMenuViaAPI(customScreenMenuPlugin, player, menuName);
+                
+                if (!opened) {
+                    // Fallback to command execution
+                    opened = tryOpenMenuViaCommand(player, menuName);
+                }
+                
+                if (!opened) {
+                    plugin.getLogger().warn("Failed to open CustomScreenMenu for " + player.getName() + " with menu: " + menuName);
+                }
+            } catch (Exception e) {
+                plugin.getLogger().error("Error opening CustomScreenMenu for " + player.getName() + ": " + e.getMessage());
+                if (plugin.getConfiguration().get(ConfigurationKeys.DEBUG)) {
+                    e.printStackTrace();
+                }
+            }
+        }, delayTicks);
+    }
+
+    /**
+     * Attempts to open CustomScreenMenu via API using reflection.
+     * Based on CustomScreenMenu source code analysis:
+     * - Main class: com.example.ui.CursorMenuPlugin
+     * - API method: setupCursor(Player player, String key)
+     * 
+     * @param pluginInstance the CustomScreenMenu plugin instance
+     * @param player the player to open the menu for
+     * @param menuName the name of the menu to open
+     * @return true if menu was opened successfully, false otherwise
+     */
+    private boolean tryOpenMenuViaAPI(org.bukkit.plugin.Plugin pluginInstance, org.bukkit.entity.Player player, String menuName) {
+        try {
+            Class<?> pluginClass = pluginInstance.getClass();
+            
+            // Try the known API method: setupCursor(Player, String)
+            try {
+                java.lang.reflect.Method setupCursorMethod = pluginClass.getMethod("setupCursor", org.bukkit.entity.Player.class, String.class);
+                setupCursorMethod.invoke(pluginInstance, player, menuName);
+                plugin.getLogger().info("[CustomScreenMenu] Opened menu '" + menuName + "' for " + player.getName() + " via API");
+                return true;
+            } catch (NoSuchMethodException e) {
+                // Method not found, try alternatives
+            }
+            
+            // Fallback: Try to find the method with different names
+            String[] possibleMethodNames = {
+                "setupCursor", "openMenu", "startMenu", "showMenu"
+            };
+            
+            for (String methodName : possibleMethodNames) {
+                try {
+                    java.lang.reflect.Method method = pluginClass.getMethod(methodName, org.bukkit.entity.Player.class, String.class);
+                    method.invoke(pluginInstance, player, menuName);
+                    plugin.getLogger().info("[CustomScreenMenu] Opened menu '" + menuName + "' for " + player.getName() + " via API (" + methodName + ")");
+                    return true;
+                } catch (NoSuchMethodException e) {
+                    continue;
+                }
+            }
+            
+            return false;
+        } catch (Exception e) {
+            if (plugin.getConfiguration().get(ConfigurationKeys.DEBUG)) {
+                plugin.getLogger().warn("[CustomScreenMenu] Error calling API: " + e.getMessage());
+                e.printStackTrace();
+            }
+            return false;
+        }
+    }
+
+    /**
+     * Attempts to open CustomScreenMenu via command execution.
+     * Based on CustomScreenMenu source code, the command format is:
+     * - cursormenu run <menu-name> (for self)
+     * - cursormenu run <menu-name> <player> (for other player)
+     * 
+     * @param player the player to open the menu for
+     * @param menuName the name of the menu to open
+     * @return true if command executed successfully, false otherwise
+     */
+    private boolean tryOpenMenuViaCommand(org.bukkit.entity.Player player, String menuName) {
+        try {
+            // Based on Commands.java, the correct command format is: cursormenu run <menu-name>
+            String command = "cursormenu run " + menuName;
+            boolean success = player.performCommand(command);
+            
+            if (success) {
+                return true;
+            }
+            
+            // Try alternative: cmenu run <menu-name>
+            command = "cmenu run " + menuName;
+            success = player.performCommand(command);
+            
+            return success;
+        } catch (Exception e) {
+            if (plugin.getConfiguration().get(ConfigurationKeys.DEBUG)) {
+                plugin.getLogger().warn("[CustomScreenMenu] Error executing command: " + e.getMessage());
+            }
+            return false;
+        }
+    }
+
+    /**
      * Checks if the server is running Paper.
      *
      * @return true if running Paper

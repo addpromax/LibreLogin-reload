@@ -272,6 +272,8 @@ public class AuthenticListeners<Plugin extends AuthenticLibreLogin<P, S>, P, S> 
         return user;
     }
 
+    // NOTE: This method is still used by Velocity/BungeeCord implementations
+    // Paper no longer uses this for teleportation, but proxy platforms still need it
     protected BiHolder<Boolean, S> chooseServer(P player, @Nullable String ip, @Nullable User user) {
         var id = platformHandle.getUUIDForPlayer(player);
         var fromFloodgate = plugin.fromFloodgate(id);

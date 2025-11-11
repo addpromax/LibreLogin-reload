@@ -1,0 +1,23 @@
+# AnimationsCoreLoginPatch 配置文件
+# 
+# 这个插件用于在玩家点击 CustomScreenMenu 按钮后触发 AnimationsCore 的加入动画
+# 而不是在玩家加入服务器时立即触发
+
+# 调试模式
+# 启用后会输出详细的调试信息
+debug: true
+
+# 动画延迟（tick数）
+# 在玩家点击按钮后延迟多少 tick 再触发动画
+# 20 tick = 1 秒
+# 建议值：10-20（0.5-1秒）
+animation-delay-ticks: 10
+
+teleport:
+  enabled: true
+  # 若为 true，则在播放动画前先传送到全局登录点位（若存在）
+  # 若未配置任何点位或所有点位无效，则回退到玩家当前位置
+  safe-teleport: true
+  # 可单独设置传送到点位后再播放动画的延迟（如不需要单独设置请保持与 animation-delay-ticks 相同）
+  delay-ticks-before-animation: 10
+

@@ -121,15 +121,14 @@ libby {
 }
 
 configurations.all {
-    // I hate this, but it needs to be done as bungeecord does not support newer versions of adventure, and packetevents includes it
     resolutionStrategy {
-        force("net.kyori:adventure-text-minimessage:4.14.0")
-        force("net.kyori:adventure-text-serializer-gson:4.14.0")
-        force("net.kyori:adventure-text-serializer-legacy:4.14.0")
-        force("net.kyori:adventure-text-serializer-json:4.14.0")
-        force("net.kyori:adventure-api:4.14.0")
-        force("net.kyori:adventure-nbt:4.14.0")
-        force("net.kyori:adventure-key:4.14.0")
+        force("net.kyori:adventure-text-minimessage:4.25.0")
+        force("net.kyori:adventure-text-serializer-gson:4.25.0")
+        force("net.kyori:adventure-text-serializer-legacy:4.25.0")
+        force("net.kyori:adventure-text-serializer-json:4.25.0")
+        force("net.kyori:adventure-api:4.25.0")
+        force("net.kyori:adventure-nbt:4.25.0")
+        force("net.kyori:adventure-key:4.25.0")
     }
 }
 
@@ -165,8 +164,9 @@ dependencies {
     compileOnly("dev.simplix:protocolize-api:2.4.2")
     libby("org.bouncycastle:bcprov-jdk18on:1.80")
     libby("org.apache.commons:commons-email:1.6.0")
-    // DO NOT UPGRADE TO 4.15.0 OR ABOVE BEFORE TESTING WATERFALL AND BUNGEECORD COMPATIBILITY!!!
-    libby("net.kyori:adventure-text-minimessage:4.14.0")
+    // Updated to 4.25.0 to support PlayerHeadObjectContents (required by FancyDialogs)
+    // NOTE: BungeeCord/Waterfall compatibility should be tested with this version
+    libby("net.kyori:adventure-text-minimessage:4.25.0")
     libby("com.github.kyngs:LegacyMessage:0.2.0")
 
     //Geyser
@@ -185,7 +185,7 @@ dependencies {
     libby("org.bstats:bstats-bukkit:3.0.2")
 
     //Paper
-    compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
+    compileOnly("io.papermc.paper:paper-api:1.21.10-R0.1-SNAPSHOT")
     //compileOnly "com.comphenix.protocol:ProtocolLib:5.1.0"
     compileOnly("com.github.retrooper:packetevents-spigot:2.7.0")
     compileOnly("io.netty:netty-transport:4.1.108.Final")

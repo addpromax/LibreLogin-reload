@@ -30,7 +30,6 @@ import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.spigotmc.event.player.PlayerSpawnLocationEvent;
 import xyz.kyngs.librelogin.api.database.User;
 import xyz.kyngs.librelogin.common.AuthenticLibreLogin;
 import xyz.kyngs.librelogin.common.config.ConfigurationKeys;
@@ -135,6 +134,10 @@ public class PaperListeners extends AuthenticListeners<PaperLibreLogin, Player, 
         readOnlyUserCache.put(user.getUuid(), user);
     }
 
+    // REMOVED: LibreLogin no longer manages player teleportation on Paper
+    // Players will spawn at their default location (bed spawn or world spawn)
+    // Authentication still required, but no teleportation to limbo/lobby worlds
+    /*
     @EventHandler(priority = EventPriority.HIGHEST)
     public void chooseWorld(PlayerSpawnLocationEvent event) {
         var ip = ipCache.getIfPresent(event.getPlayer());
@@ -167,6 +170,7 @@ public class PaperListeners extends AuthenticListeners<PaperLibreLogin, Player, 
 
         }
     }
+    */
 
     /* Commented out when migrating to PacketEvents
     //Unused, might be useful in the future

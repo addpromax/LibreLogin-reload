@@ -94,6 +94,7 @@ public class AuthenticAuthorizationProvider<P, S> extends AuthenticHandler<P, S>
 
     /**
      * Checks if the player needs to see an announcement and shows it if necessary.
+     * This method is called from authorize() for normal login/register.
      *
      * @param user the user data
      * @param player the player
@@ -129,6 +130,8 @@ public class AuthenticAuthorizationProvider<P, S> extends AuthenticHandler<P, S>
                 if (plugin.getConfiguration().get(ConfigurationKeys.DEBUG)) {
                     plugin.getLogger().debug("Announcements disabled in announcement.yml");
                 }
+                // Announcements are disabled, open CustomScreenMenu directly
+                openCustomScreenMenuAfterLogin(bukkitPlayer);
                 return;
             }
 
@@ -156,6 +159,9 @@ public class AuthenticAuthorizationProvider<P, S> extends AuthenticHandler<P, S>
                     plugin.getLogger().debug("Player " + bukkitPlayer.getName() 
                         + " has already seen current announcement (hash: " + currentAnnouncementHash + ")");
                 }
+                
+                // Player has already seen the announcement, open CustomScreenMenu if enabled
+                openCustomScreenMenuAfterLogin(bukkitPlayer);
             }
         } catch (Exception e) {
             plugin.getLogger().error("Error checking announcement for player " + player + ": " + e.getMessage());
@@ -224,6 +230,18 @@ public class AuthenticAuthorizationProvider<P, S> extends AuthenticHandler<P, S>
     }
 
     /**
+     * Checks if the player needs to see an announcement and shows it if necessary.
+     * This method is called from AuthenticatedEvent for PREMIUM/SESSION login.
+     * Made public so it can be called from PaperLibreLogin.
+     *
+     * @param user the user data
+     * @param player the player
+     */
+    public void checkAndShowAnnouncementForAuthenticatedEvent(User user, P player) {
+        checkAndShowAnnouncement(user, player);
+    }
+
+    /**
      * Closes any active FancyDialog for the player.
      *
      * @param player the player
@@ -239,6 +257,34 @@ public class AuthenticAuthorizationProvider<P, S> extends AuthenticHandler<P, S>
                 } catch (Exception e) {
                     plugin.getLogger().debug("Failed to close FancyDialog: " + e.getMessage());
                 }
+            }
+        }
+    }
+
+    /**
+     * Opens CustomScreenMenu for the player after login if enabled.
+     * This is called when the player has already seen the announcement or when announcement is disabled.
+     *
+     * @param bukkitPlayer the Bukkit player
+     */
+    private void openCustomScreenMenuAfterLogin(org.bukkit.entity.Player bukkitPlayer) {
+        // Only open menu on Paper servers with DialogManager
+        if (!(plugin instanceof xyz.kyngs.librelogin.paper.PaperLibreLogin paperPlugin)) {
+            return;
+        }
+
+        var dialogManager = paperPlugin.getDialogManager();
+        if (dialogManager == null || !dialogManager.isAvailable()) {
+            return;
+        }
+
+        try {
+            // Open CustomScreenMenu through DialogManager
+            dialogManager.openCustomScreenMenu(bukkitPlayer);
+        } catch (Exception e) {
+            plugin.getLogger().error("Error opening CustomScreenMenu for player " + bukkitPlayer.getName() + ": " + e.getMessage());
+            if (plugin.getConfiguration().get(ConfigurationKeys.DEBUG)) {
+                e.printStackTrace();
             }
         }
     }
@@ -495,16 +541,21 @@ public class AuthenticAuthorizationProvider<P, S> extends AuthenticHandler<P, S>
     public void beginTwoFactorAuth(User user, P player, TOTPData data) {
         awaiting2FA.put(player, data.secret());
 
-        var limbo = plugin.getServerHandler().chooseLimboServer(user, player);
+        // MODIFIED: Paper platform no longer manages player teleportation
+        // Players stay at their current location during 2FA authentication
+        if (!platformHandle.getPlatformIdentifier().equals("paper")) {
+            var limbo = plugin.getServerHandler().chooseLimboServer(user, player);
 
-        if (limbo == null) {
-            platformHandle.kick(player, plugin.getMessages().getMessage("kick-no-limbo"));
-            return;
+            if (limbo == null) {
+                platformHandle.kick(player, plugin.getMessages().getMessage("kick-no-limbo"));
+                return;
+            }
+
+            platformHandle.movePlayer(player, limbo).whenComplete((t, e) -> {
+                if (t != null || e != null) awaiting2FA.remove(player);
+            });
         }
-
-        platformHandle.movePlayer(player, limbo).whenComplete((t, e) -> {
-            if (t != null || e != null) awaiting2FA.remove(player);
-        });
+        // On Paper, player remains at current location for 2FA prompt
     }
 
     @Override

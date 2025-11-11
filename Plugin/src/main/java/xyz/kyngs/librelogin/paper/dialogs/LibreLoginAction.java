@@ -9,7 +9,9 @@ package xyz.kyngs.librelogin.paper.dialogs;
 import com.fancyinnovations.fancydialogs.api.Dialog;
 import com.fancyinnovations.fancydialogs.api.DialogAction;
 import net.kyori.adventure.text.Component;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 import xyz.kyngs.librelogin.api.database.User;
 import xyz.kyngs.librelogin.api.event.events.AuthenticatedEvent;
 import xyz.kyngs.librelogin.common.config.ConfigurationKeys;
@@ -234,8 +236,7 @@ public class LibreLoginAction implements DialogAction {
 
         // Check if data is empty or null
         if (data == null || data.trim().isEmpty()) {
-            showError(player, plugin.getMessages().getRawMessage("error-empty-input"));
-            manager.closeAllDialogs(player);
+			showErrorInLoginDialog(player, user, plugin.getMessages().getRawMessage("error-empty-input"), "error");
             return;
         }
         
@@ -246,8 +247,7 @@ public class LibreLoginAction implements DialogAction {
         String totpCode = parts[1] != null ? parts[1] : "";
 
         if (password.isEmpty()) {
-            showError(player, plugin.getMessages().getRawMessage("error-empty-input"));
-            manager.closeAllDialogs(player);
+			showErrorInLoginDialog(player, user, plugin.getMessages().getRawMessage("error-empty-input"), "error");
             return;
         }
 
@@ -1019,13 +1019,16 @@ public class LibreLoginAction implements DialogAction {
                     String currentHash = plugin.getAnnouncementManager().getCurrentHash();
                     if (currentHash != null) {
                         user.setLastSeenAnnouncementHash(currentHash);
-            plugin.getDatabaseProvider().updateUser(user);
+                        plugin.getDatabaseProvider().updateUser(user);
 
-            if (plugin.getConfiguration().get(ConfigurationKeys.DEBUG)) {
+                        if (plugin.getConfiguration().get(ConfigurationKeys.DEBUG)) {
                             plugin.getLogger().debug("Updated announcement hash for authorized player: " + player.getName() + " to " + currentHash);
                         }
                     }
                 }
+                
+                // Open CustomScreenMenu after announcement confirmation if enabled
+                openCustomScreenMenu(player);
                 
                 // Player is already authorized, no need to show auth dialogs
                 return;
@@ -1716,6 +1719,154 @@ public class LibreLoginAction implements DialogAction {
             } catch (Exception fallbackException) {
                 plugin.getLogger().error("Fallback 2FA dialog also failed for " + player.getName() + ": " + fallbackException.getMessage());
             }
+        }
+    }
+
+    /**
+     * Opens CustomScreenMenu for the player if enabled in configuration.
+     * This method is called after announcement confirmation or after login when no announcement is needed.
+     *
+     * @param player the player to open the menu for
+     */
+    private void openCustomScreenMenu(Player player) {
+        // Check if CustomScreenMenu is enabled
+        Boolean enabled = plugin.getConfiguration().get(ConfigurationKeys.CUSTOM_SCREEN_MENU_ENABLED);
+        if (enabled == null || !enabled) {
+            return;
+        }
+
+        // Get menu name from configuration
+        String menuName = plugin.getConfiguration().get(ConfigurationKeys.CUSTOM_SCREEN_MENU_NAME);
+        if (menuName == null || menuName.trim().isEmpty()) {
+            plugin.getLogger().warn("CustomScreenMenu menu name is not configured");
+            return;
+        }
+
+        // Get delay from configuration
+        Integer delayConfig = plugin.getConfiguration().get(ConfigurationKeys.CUSTOM_SCREEN_MENU_DELAY);
+        int delay = delayConfig != null ? delayConfig : 500;
+        long delayTicks = delay / 50;
+
+        // Schedule menu opening with delay - use main thread for command execution
+        Bukkit.getScheduler().runTaskLater(plugin.getBootstrap(), () -> {
+            if (!player.isOnline()) {
+                return;
+            }
+
+            // Check if player is still authorized
+            if (!plugin.getAuthorizationProvider().isAuthorized(player)) {
+                return;
+            }
+
+            // Check if CustomScreenMenu plugin is installed
+            Plugin customScreenMenuPlugin = Bukkit.getPluginManager().getPlugin("CustomScreenMenu");
+            if (customScreenMenuPlugin == null || !customScreenMenuPlugin.isEnabled()) {
+                plugin.getLogger().warn("CustomScreenMenu plugin is not installed or not enabled");
+                return;
+            }
+
+            try {
+                // Try to use CustomScreenMenu API first
+                boolean opened = tryOpenMenuViaAPI(customScreenMenuPlugin, player, menuName);
+                
+                if (!opened) {
+                    // Fallback to command execution
+                    opened = tryOpenMenuViaCommand(player, menuName);
+                }
+                
+                if (!opened) {
+                    plugin.getLogger().warn("Failed to open CustomScreenMenu for " + player.getName() + " with menu: " + menuName);
+                }
+            } catch (Exception e) {
+                plugin.getLogger().error("Error opening CustomScreenMenu for " + player.getName() + ": " + e.getMessage());
+                if (plugin.getConfiguration().get(ConfigurationKeys.DEBUG)) {
+                    e.printStackTrace();
+                }
+            }
+        }, delayTicks);
+    }
+
+    /**
+     * Attempts to open CustomScreenMenu via API using reflection.
+     * Based on CustomScreenMenu source code analysis:
+     * - Main class: com.example.ui.CursorMenuPlugin
+     * - API method: setupCursor(Player player, String key)
+     * 
+     * @param pluginInstance the CustomScreenMenu plugin instance
+     * @param player the player to open the menu for
+     * @param menuName the name of the menu to open
+     * @return true if menu was opened successfully, false otherwise
+     */
+    private boolean tryOpenMenuViaAPI(Plugin pluginInstance, Player player, String menuName) {
+        try {
+            Class<?> pluginClass = pluginInstance.getClass();
+            
+            // Try the known API method: setupCursor(Player, String)
+            try {
+                java.lang.reflect.Method setupCursorMethod = pluginClass.getMethod("setupCursor", org.bukkit.entity.Player.class, String.class);
+                setupCursorMethod.invoke(pluginInstance, player, menuName);
+                plugin.getLogger().info("[CustomScreenMenu] Opened menu '" + menuName + "' for " + player.getName() + " via API");
+                return true;
+            } catch (NoSuchMethodException e) {
+                // Method not found, try alternatives
+            }
+            
+            // Fallback: Try to find the method with different names
+            String[] possibleMethodNames = {
+                "setupCursor", "openMenu", "startMenu", "showMenu"
+            };
+            
+            for (String methodName : possibleMethodNames) {
+                try {
+                    java.lang.reflect.Method method = pluginClass.getMethod(methodName, org.bukkit.entity.Player.class, String.class);
+                    method.invoke(pluginInstance, player, menuName);
+                    plugin.getLogger().info("[CustomScreenMenu] Opened menu '" + menuName + "' for " + player.getName() + " via API (" + methodName + ")");
+                    return true;
+                } catch (NoSuchMethodException e) {
+                    continue;
+                }
+            }
+            
+            return false;
+        } catch (Exception e) {
+            if (plugin.getConfiguration().get(ConfigurationKeys.DEBUG)) {
+                plugin.getLogger().warn("[CustomScreenMenu] Error calling API: " + e.getMessage());
+                e.printStackTrace();
+            }
+            return false;
+        }
+    }
+
+    /**
+     * Attempts to open CustomScreenMenu via command execution.
+     * Based on CustomScreenMenu source code, the command format is:
+     * - cursormenu run <menu-name> (for self)
+     * - cursormenu run <menu-name> <player> (for other player)
+     * 
+     * @param player the player to open the menu for
+     * @param menuName the name of the menu to open
+     * @return true if command executed successfully, false otherwise
+     */
+    private boolean tryOpenMenuViaCommand(Player player, String menuName) {
+        try {
+            // Based on Commands.java, the correct command format is: cursormenu run <menu-name>
+            String command = "cursormenu run " + menuName;
+            boolean success = player.performCommand(command);
+            
+            if (success) {
+                return true;
+            }
+            
+            // Try alternative: cmenu run <menu-name>
+            command = "cmenu run " + menuName;
+            success = player.performCommand(command);
+            
+            return success;
+        } catch (Exception e) {
+            if (plugin.getConfiguration().get(ConfigurationKeys.DEBUG)) {
+                plugin.getLogger().warn("[CustomScreenMenu] Error executing command: " + e.getMessage());
+            }
+            return false;
         }
     }
 }

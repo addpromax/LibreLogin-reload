@@ -56,35 +56,40 @@ public class AuthenticServerHandler<P, S> implements ServerHandler<P, S> {
 
         var handle = plugin.getPlatformHandle();
 
-        if (plugin.getConfiguration().get(ConfigurationKeys.PING_SERVERS))
-            plugin.getLogger().info("Pinging servers...");
+        // MODIFIED: Paper platform no longer registers limbo/lobby servers
+        // Paper no longer manages player teleportation, so server registration is skipped
+        if (!handle.getPlatformIdentifier().equals("paper")) {
+            if (plugin.getConfiguration().get(ConfigurationKeys.PING_SERVERS))
+                plugin.getLogger().info("Pinging servers...");
 
-        for (String limbo : plugin.getConfiguration().get(LIMBO)) {
-            var server = handle.getServer(limbo, true);
-            if (server != null) {
-                registerLimboServer(server);
-            } else {
-                plugin.getLogger().warn("Limbo server/world " + limbo + " not found!");
+            for (String limbo : plugin.getConfiguration().get(LIMBO)) {
+                var server = handle.getServer(limbo, true);
+                if (server != null) {
+                    registerLimboServer(server);
+                } else {
+                    plugin.getLogger().warn("Limbo server/world " + limbo + " not found!");
+                }
             }
-        }
 
-        plugin.getConfiguration().get(ConfigurationKeys.LOBBY).forEach((forced, server) -> {
-            var s = handle.getServer(server, false);
-            if (s != null) {
-                registerLobbyServer(s, forced);
-            } else {
-                plugin.getLogger().warn("Lobby server/world " + server + " not found!");
+            plugin.getConfiguration().get(ConfigurationKeys.LOBBY).forEach((forced, server) -> {
+                var s = handle.getServer(server, false);
+                if (s != null) {
+                    registerLobbyServer(s, forced);
+                } else {
+                    plugin.getLogger().warn("Lobby server/world " + server + " not found!");
+                }
+            });
+
+            plugin.getLogger().debug("List of registered servers: ");
+
+            for (S server : plugin.getPlatformHandle().getServers()) {
+                plugin.getLogger().debug("Server: " + plugin.getPlatformHandle().getServerName(server) + " | " + server);
             }
-        });
 
-        plugin.getLogger().debug("List of registered servers: ");
-
-
-        for (S server : plugin.getPlatformHandle().getServers()) {
-            plugin.getLogger().debug("Server: " + plugin.getPlatformHandle().getServerName(server) + " | " + server);
+            if (plugin.getConfiguration().get(ConfigurationKeys.PING_SERVERS)) plugin.getLogger().info("Pinged servers...");
+        } else {
+            plugin.getLogger().info("Paper platform detected - limbo/lobby server registration skipped (teleportation disabled)");
         }
-
-        if (plugin.getConfiguration().get(ConfigurationKeys.PING_SERVERS)) plugin.getLogger().info("Pinged servers...");
     }
 
     @Override

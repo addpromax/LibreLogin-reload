@@ -1,0 +1,24 @@
+name: AnimationsCoreLoginPatch
+version: ${project.version}
+main: com.magicbili.animationscoreloginpatch.AnimationsCoreLoginPatch
+api-version: 1.19
+author: magicbili
+description: Patch plugin to trigger AnimationsCore join animation after LibreLogin authentication
+depend: [LibreLogin]
+softdepend: [AnimationsCore]
+
+commands:
+  joinan:
+    description: 触发加入动画的命令（仅控制台可用）
+    usage: /<command> [player]
+  loginpoints:
+    description: 管理全局登录点位
+    usage: /<command> <add|insert|remove|list|tp|clear|reload>
+    aliases: [lpnt]
+    permission: animationscoreloginpatch.points.admin
+
+permissions:
+  animationscoreloginpatch.points.admin:
+    description: 允许管理登录点位
+    default: op
+
