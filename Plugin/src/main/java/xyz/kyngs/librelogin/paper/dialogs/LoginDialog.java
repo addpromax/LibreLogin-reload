@@ -19,7 +19,9 @@ import xyz.kyngs.librelogin.common.config.MessageKeys;
 import xyz.kyngs.librelogin.paper.PaperLibreLogin;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Login dialog for FancyDialogs integration.
@@ -91,7 +93,9 @@ public class LoginDialog {
                 1,
                 "",
                 128,
-                1
+                1,
+                new HashMap<>(), // requirements
+                null // width (use default)
         );
         textFields.add(passwordField);
 
@@ -104,7 +108,9 @@ public class LoginDialog {
                     2,
                     "",
                     6,
-                    1
+                    1,
+                    new HashMap<>(), // requirements
+                    null // width (use default)
             );
             textFields.add(twoFAField);
         }
@@ -121,7 +127,13 @@ public class LoginDialog {
         // 格式: password:totp_code (如果没有2FA，totp_code会是空字符串)
         String dataTemplate = user.getSecret() != null ? "{password}:{totp_code}" : "{password}";
         loginActions.add(new DialogButton.DialogAction("librelogin_login", dataTemplate));
-        DialogButton loginButton = new DialogButton(loginButtonText, null, loginActions);
+        DialogButton loginButton = new DialogButton(
+                loginButtonText, 
+                null, 
+                loginActions, 
+                new HashMap<>(), // requirements
+                150 // width
+        );
         buttons.add(loginButton);
 
         // Forgot password button (if email is configured)
@@ -129,7 +141,13 @@ public class LoginDialog {
             String forgotPasswordText = plugin.getMessages().getRawMessage(MessageKeys.DIALOG_BUTTON_FORGOT_PASSWORD.key());
             List<DialogButton.DialogAction> forgotActions = new ArrayList<>();
             forgotActions.add(new DialogButton.DialogAction("librelogin_forgot_password", "librelogin_forgot_password"));
-            DialogButton forgotButton = new DialogButton(forgotPasswordText, null, forgotActions);
+            DialogButton forgotButton = new DialogButton(
+                    forgotPasswordText, 
+                    null, 
+                    forgotActions, 
+                    new HashMap<>(), // requirements
+                    150 // width
+            );
             buttons.add(forgotButton);
         }
 
@@ -137,7 +155,13 @@ public class LoginDialog {
         String disconnectButtonText = plugin.getMessages().getRawMessage(MessageKeys.DIALOG_BUTTON_DISCONNECT.key());
         List<DialogButton.DialogAction> disconnectActions = new ArrayList<>();
         disconnectActions.add(new DialogButton.DialogAction("librelogin_disconnect", "librelogin_disconnect"));
-        DialogButton disconnectButton = new DialogButton(disconnectButtonText, null, disconnectActions);
+        DialogButton disconnectButton = new DialogButton(
+                disconnectButtonText, 
+                null, 
+                disconnectActions, 
+                new HashMap<>(), // requirements
+                150 // width
+        );
         buttons.add(disconnectButton);
 
         // Create dialog data
@@ -147,7 +171,9 @@ public class LoginDialog {
                 canCloseWithEscape,
                 bodyList,
                 inputs,
-                buttons
+                buttons,
+                null, // exitAction
+                null  // columns (use default)
         );
 
         return manager.getFancyDialogs().createDialog(data);

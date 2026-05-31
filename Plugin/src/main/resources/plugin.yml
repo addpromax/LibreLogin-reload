@@ -15,3 +15,6 @@ permissions:
   librelogin.force-2fa:
     description: "Forces the player to set up 2FA (Two-Factor Authentication) after registration"
     default: op
+  librelogin.skipmenu:
+    description: "Allows player to skip CustomScreenMenu after authentication"
+    default: false

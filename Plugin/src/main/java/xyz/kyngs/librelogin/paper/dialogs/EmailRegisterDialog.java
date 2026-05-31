@@ -19,7 +19,9 @@ import xyz.kyngs.librelogin.common.config.MessageKeys;
 import xyz.kyngs.librelogin.paper.PaperLibreLogin;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Email register dialog for FancyDialogs integration.
@@ -91,7 +93,9 @@ public class EmailRegisterDialog {
                 1,
                 "",
                 128,
-                1
+                1,
+                new HashMap<>(), // requirements
+                null // width (use default)
         );
         textFields.add(passwordField);
 
@@ -103,7 +107,9 @@ public class EmailRegisterDialog {
                 2,
                 "",
                 128,
-                1
+                1,
+                new HashMap<>(), // requirements
+                null // width (use default)
         );
         textFields.add(confirmField);
 
@@ -115,7 +121,9 @@ public class EmailRegisterDialog {
                 3,
                 "",
                 254, // RFC 5321 maximum email address length
-                1
+                1,
+                new HashMap<>(), // requirements
+                null // width (use default)
         );
         textFields.add(emailField);
 
@@ -131,21 +139,39 @@ public class EmailRegisterDialog {
         // 格式: password:password_confirm:email
         // 表单提交按钮应该使用dialog ID而不是action名称
         submitActions.add(new DialogButton.DialogAction("librelogin_email_register", "{password}:{password_confirm}:{email}"));
-        DialogButton submitButton = new DialogButton(submitButtonText, null, submitActions);
+        DialogButton submitButton = new DialogButton(
+                submitButtonText, 
+                null, 
+                submitActions, 
+                new HashMap<>(), // requirements
+                150 // width
+        );
         buttons.add(submitButton);
 
         // Back to regular register button
         String backButtonText = plugin.getMessages().getRawMessage(MessageKeys.DIALOG_BUTTON_BACK_TO_LOGIN.key());
         List<DialogButton.DialogAction> backActions = new ArrayList<>();
         backActions.add(new DialogButton.DialogAction("librelogin_back_to_register", "librelogin_back_to_register"));
-        DialogButton backButton = new DialogButton(backButtonText, null, backActions);
+        DialogButton backButton = new DialogButton(
+                backButtonText, 
+                null, 
+                backActions, 
+                new HashMap<>(), // requirements
+                150 // width
+        );
         buttons.add(backButton);
 
         // Disconnect button
         String disconnectButtonText = plugin.getMessages().getRawMessage(MessageKeys.DIALOG_BUTTON_DISCONNECT.key());
         List<DialogButton.DialogAction> disconnectActions = new ArrayList<>();
         disconnectActions.add(new DialogButton.DialogAction("librelogin_disconnect", "librelogin_disconnect"));
-        DialogButton disconnectButton = new DialogButton(disconnectButtonText, null, disconnectActions);
+        DialogButton disconnectButton = new DialogButton(
+                disconnectButtonText, 
+                null, 
+                disconnectActions, 
+                new HashMap<>(), // requirements
+                150 // width
+        );
         buttons.add(disconnectButton);
 
         // Create dialog data
@@ -155,7 +181,9 @@ public class EmailRegisterDialog {
                 canCloseWithEscape,
                 bodyList,
                 inputs,
-                buttons
+                buttons,
+                null, // exitAction
+                null  // columns (use default)
         );
 
         return manager.getFancyDialogs().createDialog(data);

@@ -6,19 +6,18 @@
 
 package xyz.kyngs.librelogin.paper;
 
-import org.bukkit.Bukkit;
-
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 public class PaperUtil {
 
     public static void runSyncAndWait(Runnable runnable, PaperLibreLogin plugin) {
-        if (Bukkit.isPrimaryThread()) {
+        var scheduler = plugin.getScheduler();
+        if (scheduler.isPrimaryThread()) {
             runnable.run();
         } else {
             var future = new CompletableFuture<Void>();
-            Bukkit.getScheduler().runTask(plugin.getBootstrap(), () -> {
+            scheduler.runTask(plugin.getBootstrap(), () -> {
                 runnable.run();
                 future.complete(null);
             });

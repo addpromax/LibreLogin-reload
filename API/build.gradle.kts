@@ -23,11 +23,15 @@ tasks.test {
 
 tasks.withType<JavaCompile> {
     options.compilerArgs.add("-parameters")
+    options.release.set(25)
 }
 
 java {
     withSourcesJar()
     withJavadocJar()
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(25))
+    }
 }
 
 publishing {

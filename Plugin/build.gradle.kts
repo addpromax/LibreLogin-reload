@@ -2,15 +2,16 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 plugins {
     id("java")
-    id("io.github.goooler.shadow") version "8.1.8"
-    id("net.kyori.blossom").version("1.3.1")
+    id("com.gradleup.shadow") version "8.3.11"
+    id("net.kyori.blossom") version "2.0.1"
     id("java-library")
-    id("xyz.kyngs.libby.plugin").version("1.2.1")
-    id("xyz.kyngs.mcupload.plugin").version("0.3.4")
+    id("xyz.kyngs.libby.plugin") version "1.2.1"
+    id("xyz.kyngs.mcupload.plugin") version "0.3.4"
 }
 
 tasks.withType<JavaCompile> {
     options.encoding = "UTF-8"
+    options.release.set(25)
 }
 
 mcupload {
@@ -18,7 +19,7 @@ mcupload {
     swallowErrors = true
     platforms {
         modrinth {
-            loaders = listOf("paper", "purpur", "bungeecord", "waterfall", "velocity")
+            loaders = listOf("paper", "purpur", "folia", "bungeecord", "waterfall", "velocity")
             projectId = "tL0SCXYq"
             gameVersions = listOf(
                 "1.21.4", "1.21.3", "1.21.2", "1.21.1", "1.21",
@@ -72,19 +73,31 @@ repositories {
     maven { url = uri("https://repo.fancyinnovations.com/releases") }
 }
 
-blossom {
-    replaceToken("@version@", version)
+sourceSets {
+    main {
+        blossom {
+            javaSources {
+                property("version", version.toString())
+            }
+        }
+    }
+}
+
+tasks.processResources {
+    inputs.property("version", version)
+    
+    filesMatching(listOf("plugin.yml", "bungee.yml", "paper-plugin.yml")) {
+        expand("version" to version)
+    }
 }
 
 tasks.withType<ShadowJar> {
-    archiveFileName.set("LibreLogin.jar")
+    archiveFileName.set("LibreLogin-${version}.jar")
 
-    dependencies {
-        exclude(dependency("org.slf4j:.*:.*"))
-        exclude(dependency("org.checkerframework:.*:.*"))
-        exclude(dependency("com.google.errorprone:.*:.*"))
-        exclude(dependency("com.google.protobuf:.*:.*"))
-    }
+    exclude("org/slf4j/**")
+    exclude("org/checkerframework/**")
+    exclude("com/google/errorprone/**")
+    exclude("com/google/protobuf/**")
 
     relocate("co.aikar.acf", "xyz.kyngs.librelogin.lib.acf")
     relocate("com.github.benmanes.caffeine", "xyz.kyngs.librelogin.lib.caffeine")
@@ -105,7 +118,7 @@ tasks.withType<ShadowJar> {
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
+        languageVersion.set(JavaLanguageVersion.of(25))
     }
 }
 
@@ -192,9 +205,12 @@ dependencies {
     compileOnly("com.mojang:datafixerupper:5.0.28") //I hate this so much
     compileOnly("org.apache.logging.log4j:log4j-core:2.23.1")
     
+    //Folia support (uses Paper API with Folia-specific scheduler)
+    // Folia classes are available in Paper API 1.19.4+ but only active on Folia servers
+    
     //FancyDialogs (soft dependency for Paper 1.21.6+)
     // Using local lib jar file for compilation
-    compileOnly(files("../lib/FancyDialogs-0.0.25.jar"))
+    compileOnly(files("../lib/FancyDialogs-1.2.0.55.jar"))
 
     //Libby
     implementation("xyz.kyngs.libby:libby-bukkit:1.6.0")
@@ -206,15 +222,3 @@ dependencies {
     compileOnly("com.github.bivashy.NanoLimboPlugin:api:1.0.8")
 }
 
-tasks.withType<ProcessResources> {
-    outputs.upToDateWhen { false }
-    filesMatching("plugin.yml") {
-        expand(mapOf("version" to version))
-    }
-    filesMatching("bungee.yml") {
-        expand(mapOf("version" to version))
-    }
-    filesMatching("paper-plugin.yml") {
-        expand(mapOf("version" to version))
-    }
-}

@@ -20,7 +20,9 @@ import xyz.kyngs.librelogin.common.config.MessageKeys;
 import xyz.kyngs.librelogin.paper.PaperLibreLogin;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Two-Factor Authentication input dialog for FancyDialogs integration.
@@ -105,7 +107,9 @@ public class TwoFactorSetupDialog {
                 1,
                 "",
                 6,  // 6-digit code
-                1
+                1,
+                new HashMap<>(), // requirements
+                null // width (use default)
         );
         textFields.add(codeField);
 
@@ -124,7 +128,9 @@ public class TwoFactorSetupDialog {
         DialogButton confirmButton = new DialogButton(
                 confirmButtonText,
                 null,  // No icon
-                confirmActions
+                confirmActions,
+                new HashMap<>(), // requirements
+                150 // width
         );
         buttons.add(confirmButton);
         
@@ -137,7 +143,13 @@ public class TwoFactorSetupDialog {
         List<DialogButton.DialogAction> rescanActions = new ArrayList<>();
         // 🔧 修复：直接传递secret作为data，action名称包含前缀用于路由识别
         rescanActions.add(new DialogButton.DialogAction("librelogin_2fa_rescan", "librelogin_2fa_rescan:" + totpData.secret()));
-        DialogButton rescanButton = new DialogButton(rescanButtonText, null, rescanActions);
+        DialogButton rescanButton = new DialogButton(
+                rescanButtonText, 
+                null, 
+                rescanActions, 
+                new HashMap<>(), // requirements
+                150 // width
+        );
         buttons.add(rescanButton);
         
         if (plugin.getConfiguration().get(ConfigurationKeys.DEBUG)) {
@@ -149,7 +161,13 @@ public class TwoFactorSetupDialog {
             String skipButtonText = plugin.getMessages().getRawMessage(MessageKeys.DIALOG_BUTTON_SKIP_2FA.key());
             List<DialogButton.DialogAction> skipActions = new ArrayList<>();
             skipActions.add(new DialogButton.DialogAction("librelogin_2fa_skip", "librelogin_2fa_skip"));
-            DialogButton skipButton = new DialogButton(skipButtonText, null, skipActions);
+            DialogButton skipButton = new DialogButton(
+                    skipButtonText, 
+                    null, 
+                    skipActions, 
+                    new HashMap<>(), // requirements
+                    150 // width
+            );
             buttons.add(skipButton);
             
             if (plugin.getConfiguration().get(ConfigurationKeys.DEBUG)) {
@@ -168,7 +186,9 @@ public class TwoFactorSetupDialog {
                 canCloseWithEscape,       // Can close with ESC
                 bodyList,                 // Body content
                 inputs,                   // Input fields
-                buttons                   // Action buttons
+                buttons,                  // Action buttons
+                null,                     // exitAction
+                null                      // columns (use default)
         );
 
         Dialog dialog = manager.getFancyDialogs().createDialog(data);

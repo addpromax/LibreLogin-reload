@@ -18,6 +18,7 @@ import xyz.kyngs.librelogin.common.config.MessageKeys;
 import xyz.kyngs.librelogin.paper.PaperLibreLogin;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -65,7 +66,13 @@ public class RegisterConfirmationDialog {
         List<DialogButton.DialogAction> confirmActions = new ArrayList<>();
         // 传递密码数据以便直接注册
         confirmActions.add(new DialogButton.DialogAction("librelogin_register_confirm_continue", password + ":" + passwordConfirm));
-        DialogButton confirmButton = new DialogButton(confirmButtonText, null, confirmActions);
+        DialogButton confirmButton = new DialogButton(
+                confirmButtonText, 
+                null, 
+                confirmActions, 
+                new HashMap<>(), // requirements
+                150 // width
+        );
         buttons.add(confirmButton);
 
         // Go to email registration button
@@ -73,14 +80,26 @@ public class RegisterConfirmationDialog {
         List<DialogButton.DialogAction> emailRegisterActions = new ArrayList<>();
         // 传递密码数据到邮箱注册流程
         emailRegisterActions.add(new DialogButton.DialogAction("librelogin_go_email_register", password + ":" + passwordConfirm));
-        DialogButton emailRegisterButton = new DialogButton(emailRegisterButtonText, null, emailRegisterActions);
+        DialogButton emailRegisterButton = new DialogButton(
+                emailRegisterButtonText, 
+                null, 
+                emailRegisterActions, 
+                new HashMap<>(), // requirements
+                150 // width
+        );
         buttons.add(emailRegisterButton);
 
         // Back to register button
         String backButtonText = plugin.getMessages().getRawMessage(MessageKeys.DIALOG_BUTTON_BACK_TO_REGISTER.key());
         List<DialogButton.DialogAction> backActions = new ArrayList<>();
         backActions.add(new DialogButton.DialogAction("librelogin_back_to_register", "librelogin_back_to_register"));
-        DialogButton backButton = new DialogButton(backButtonText, null, backActions);
+        DialogButton backButton = new DialogButton(
+                backButtonText, 
+                null, 
+                backActions, 
+                new HashMap<>(), // requirements
+                150 // width
+        );
         buttons.add(backButton);
 
         // Create dialog data
@@ -90,7 +109,9 @@ public class RegisterConfirmationDialog {
                 canCloseWithEscape,
                 bodyList,
                 inputs,
-                buttons
+                buttons,
+                null, // exitAction
+                null  // columns (use default)
         );
 
         return manager.getFancyDialogs().createDialog(data);

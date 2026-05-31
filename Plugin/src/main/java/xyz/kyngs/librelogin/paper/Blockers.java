@@ -56,16 +56,14 @@ public class Blockers implements Listener {
         return !authorizationProvider.isAuthorized(player) || authorizationProvider.isAwaiting2FA(player);
     }
 
-    @EventHandler(priority = EventPriority.LOWEST)
-    public void onTeleport(PlayerTeleportEvent event) {
-        if (inLimbo(event.getPlayer())) {
-            event.setCancelled(true);
-        } else {
-            if (serverHandler.getLimboServers().contains(event.getTo().getWorld()) && !event.getPlayer().hasPermission("librelogin.limbo.access")) {
-                event.setCancelled(true);
-            }
-        }
-    }
+    // REMOVED: Paper 端不再拦截传送事件
+    // 传送由 AnimationsCoreLoginPatch 插件管理
+    // @EventHandler(priority = EventPriority.LOWEST)
+    // public void onTeleport(PlayerTeleportEvent event) {
+    //     if (inLimbo(event.getPlayer())) {
+    //         event.setCancelled(true);
+    //     }
+    // }
 
     @EventHandler(priority = org.bukkit.event.EventPriority.LOWEST)
     public void onChat(AsyncChatEvent event) {

@@ -467,8 +467,11 @@ public class LibreLoginAction implements DialogAction {
             return;
         }
 
-        // Show confirmation dialog
-        manager.showRegisterConfirmationDialog(player, user, password, passwordConfirm);
+        // Show confirmation dialog with delay to prevent race condition
+        // 🔧 修复：延迟显示确认对话框，防止FancyDialogs认为对话框未打开的警告
+        plugin.delay(() -> {
+            manager.showRegisterConfirmationDialog(player, user, password, passwordConfirm);
+        }, 100);
     }
 
     /**
@@ -539,8 +542,11 @@ public class LibreLoginAction implements DialogAction {
             return;
         }
 
-        // Store password temporarily and show email input dialog
-        manager.showEmailInputDialog(player, user, password, passwordConfirm);
+        // Store password temporarily and show email input dialog with delay
+        // 🔧 修复：延迟显示邮箱输入对话框，防止FancyDialogs认为对话框未打开的警告
+        plugin.delay(() -> {
+            manager.showEmailInputDialog(player, user, password, passwordConfirm);
+        }, 100);
     }
 
     /**
@@ -649,8 +655,11 @@ public class LibreLoginAction implements DialogAction {
             return;
         }
 
-        // Show email status dialog
-        manager.showEmailStatusDialog(player, user);
+        // Show email status dialog with delay to prevent race condition
+        // 🔧 修复：延迟显示邮箱状态对话框，防止FancyDialogs认为对话框未打开的警告
+        plugin.delay(() -> {
+            manager.showEmailStatusDialog(player, user);
+        }, 100);
     }
 
     /**
@@ -717,9 +726,12 @@ public class LibreLoginAction implements DialogAction {
             // Store token in cache for verification
             plugin.getAuthorizationProvider().getPasswordResetCache().put(player.getUniqueId(), token);
 
-        // Show password reset dialog
-            manager.showPasswordResetDialog(player, user, 
-                plugin.getMessages().getRawMessage("info-reset-password-mail-sent"), null);
+        // Show password reset dialog with delay to prevent race condition
+            // 🔧 修复：延迟显示密码重置对话框，防止FancyDialogs认为对话框未打开的警告
+            plugin.delay(() -> {
+                manager.showPasswordResetDialog(player, user, 
+                    plugin.getMessages().getRawMessage("info-reset-password-mail-sent"), null);
+            }, 100);
 
             if (plugin.getConfiguration().get(xyz.kyngs.librelogin.common.config.ConfigurationKeys.DEBUG)) {
                 plugin.getLogger().debug("Password reset email sent successfully to " + user.getEmail());
@@ -744,8 +756,11 @@ public class LibreLoginAction implements DialogAction {
             return;
         }
 
-        // Show login dialog
-        manager.showLoginDialog(player, user);
+        // Show login dialog with delay to prevent race condition
+        // 🔧 修复：延迟显示登录对话框，防止FancyDialogs认为对话框未打开的警告
+        plugin.delay(() -> {
+            manager.showLoginDialog(player, user);
+        }, 100);
     }
 
     /**
@@ -765,8 +780,8 @@ public class LibreLoginAction implements DialogAction {
         }
         
         final String finalDisconnectMessage = disconnectMessage;
-        // Use Bukkit scheduler to ensure player kick happens on main thread immediately
-        org.bukkit.Bukkit.getScheduler().runTask(plugin.getBootstrap(), () -> {
+        // Use scheduler adapter to ensure player kick happens on appropriate thread
+        plugin.getScheduler().runEntityTask(plugin.getBootstrap(), player, () -> {
                 if (player.isOnline()) {
                 player.kick(Component.text(finalDisconnectMessage));
                 }
@@ -832,8 +847,11 @@ public class LibreLoginAction implements DialogAction {
                     plugin.getLogger().debug("Invalid TOTP code format: " + totpCode);
                 }
                 var totpData = totpProvider.generate(user);
-                manager.showTwoFactorSetupDialog(player, user, totpData, 
-                    plugin.getMessages().getRawMessage("error-2fa-verify-failed"), "error");
+                // 🔧 修复：延迟显示2FA设置对话框，防止FancyDialogs认为对话框未打开的警告
+                plugin.delay(() -> {
+                    manager.showTwoFactorSetupDialog(player, user, totpData, 
+                        plugin.getMessages().getRawMessage("error-2fa-verify-failed"), "error");
+                }, 100);
             return;
         }
 
@@ -862,8 +880,11 @@ public class LibreLoginAction implements DialogAction {
                     plugin.getLogger().debug("2FA verification failed for player: " + player.getName() + ", showing error dialog");
                 }
                 var totpData = totpProvider.generate(user);
-                manager.showTwoFactorSetupDialog(player, user, totpData, 
-                    plugin.getMessages().getRawMessage("error-2fa-verify-failed"), "error");
+                // 🔧 修复：延迟显示2FA设置对话框，防止FancyDialogs认为对话框未打开的警告
+                plugin.delay(() -> {
+                    manager.showTwoFactorSetupDialog(player, user, totpData, 
+                        plugin.getMessages().getRawMessage("error-2fa-verify-failed"), "error");
+                }, 100);
             return;
         }
 
@@ -894,8 +915,11 @@ public class LibreLoginAction implements DialogAction {
             // 重新显示2FA设置对话框，显示格式错误
             try {
                 var totpData = totpProvider.generate(user);
-                manager.showTwoFactorSetupDialog(player, user, totpData, 
-                    plugin.getMessages().getRawMessage("error-2fa-verify-failed"), "error");
+                // 🔧 修复：延迟显示2FA设置对话框，防止FancyDialogs认为对话框未打开的警告
+                plugin.delay(() -> {
+                    manager.showTwoFactorSetupDialog(player, user, totpData, 
+                        plugin.getMessages().getRawMessage("error-2fa-verify-failed"), "error");
+                }, 100);
             } catch (Exception fallbackException) {
                 showError(player, plugin.getMessages().getRawMessage("error-2fa-setup-failed"));
             }
@@ -984,8 +1008,11 @@ public class LibreLoginAction implements DialogAction {
                 var totpProvider = plugin.getTOTPProvider();
                 if (totpProvider != null) {
                     var totpData = totpProvider.generate(user, secret);
-                    manager.showTwoFactorSetupDialog(player, user, totpData, 
-                        plugin.getMessages().getRawMessage(MessageKeys.ERROR_2FA_RESCAN_FAILED.key()), "error");
+                    // 🔧 修复：延迟显示2FA设置对话框，防止FancyDialogs认为对话框未打开的警告
+                    plugin.delay(() -> {
+                        manager.showTwoFactorSetupDialog(player, user, totpData, 
+                            plugin.getMessages().getRawMessage(MessageKeys.ERROR_2FA_RESCAN_FAILED.key()), "error");
+                    }, 100);
                 }
             } catch (Exception fallbackException) {
                 plugin.getLogger().error("Fallback 2FA dialog also failed for " + player.getName() + ": " + fallbackException.getMessage());
@@ -1027,21 +1054,21 @@ public class LibreLoginAction implements DialogAction {
                     }
                 }
                 
-                // Open CustomScreenMenu after announcement confirmation if enabled
-                openCustomScreenMenu(player);
-                
                 // Player is already authorized, no need to show auth dialogs
                 return;
             }
 
             // Show appropriate next dialog based on player state (only for non-authorized players)
+            // 🔧 修复：延迟显示下一个对话框，防止FancyDialogs认为对话框未打开的警告
             var user = plugin.getDatabaseProvider().getByUUID(player.getUniqueId());
             if (user != null) {
-                if (!user.isRegistered()) {
-                    manager.showRegisterDialog(player, user);
-                } else {
-                    manager.showLoginDialog(player, user);
-                }
+                plugin.delay(() -> {
+                    if (!user.isRegistered()) {
+                        manager.showRegisterDialog(player, user);
+                    } else {
+                        manager.showLoginDialog(player, user);
+                    }
+                }, 100);
             }
         } catch (Exception e) {
             plugin.getLogger().error("Error handling announcement confirm: " + e.getMessage());
@@ -1073,8 +1100,11 @@ public class LibreLoginAction implements DialogAction {
             return;
         }
 
-        // Show email register dialog
-        manager.showEmailRegisterDialog(player, user);
+        // Show email register dialog with delay to prevent race condition
+        // 🔧 修复：延迟显示邮箱注册对话框，防止FancyDialogs认为对话框未打开的警告
+        plugin.delay(() -> {
+            manager.showEmailRegisterDialog(player, user);
+        }, 100);
     }
 
     /**
@@ -1190,8 +1220,11 @@ public class LibreLoginAction implements DialogAction {
             var registrationData = new xyz.kyngs.librelogin.common.authorization.AuthenticAuthorizationProvider.EmailVerifyData(email, registrationToken, player.getUniqueId());
             plugin.getAuthorizationProvider().getEmailConfirmCache().put(player.getUniqueId(), registrationData);
             
-            // Show email verification dialog
-            manager.showEmailVerificationDialog(player, user, email, true, null, null);
+            // Show email verification dialog with delay to prevent race condition
+            // 🔧 修复：延迟显示邮箱验证对话框，防止FancyDialogs认为对话框未打开的警告
+            plugin.delay(() -> {
+                manager.showEmailVerificationDialog(player, user, email, true, null, null);
+            }, 100);
             
         } catch (Exception e) {
             plugin.getLogger().error("Failed to send verification email for direct registration: " + e.getMessage());
@@ -1257,8 +1290,11 @@ public class LibreLoginAction implements DialogAction {
         var emailValidation = emailValidator.validateEmail(email);
         if (!emailValidation.isValid()) {
             String errorMessage = plugin.getMessages().getRawMessage(emailValidation.getErrorMessageKey());
-            // Show error in email input dialog and return to it
-            manager.showEmailInputDialog(player, user, password, passwordConfirm, errorMessage, "error");
+            // Show error in email input dialog and return to it with delay
+            // 🔧 修复：延迟显示邮箱输入对话框，防止FancyDialogs认为对话框未打开的警告
+            plugin.delay(() -> {
+                manager.showEmailInputDialog(player, user, password, passwordConfirm, errorMessage, "error");
+            }, 100);
             return;
         }
 
@@ -1268,7 +1304,10 @@ public class LibreLoginAction implements DialogAction {
         if (rateLimitResult.isLimited()) {
             String errorMessage = plugin.getMessages().getRawMessage(rateLimitResult.getLimitType().getMessageKey())
                     .replace("%minutes%", String.valueOf(rateLimitResult.getRemainingMinutes()));
-            manager.showEmailInputDialog(player, user, password, passwordConfirm, errorMessage, "error");
+            // 🔧 修复：延迟显示邮箱输入对话框，防止FancyDialogs认为对话框未打开的警告
+            plugin.delay(() -> {
+                manager.showEmailInputDialog(player, user, password, passwordConfirm, errorMessage, "error");
+            }, 100);
             return;
         }
 
@@ -1296,16 +1335,22 @@ public class LibreLoginAction implements DialogAction {
             var registrationData = new xyz.kyngs.librelogin.common.authorization.AuthenticAuthorizationProvider.EmailVerifyData(email, registrationToken, player.getUniqueId());
             plugin.getAuthorizationProvider().getEmailConfirmCache().put(player.getUniqueId(), registrationData);
             
-            // Show email verification dialog
-            manager.showEmailVerificationDialog(player, user, email, true, null, null);
+            // Show email verification dialog with delay to prevent race condition
+            // 🔧 修复：延迟显示邮箱验证对话框，防止FancyDialogs认为对话框未打开的警告
+            plugin.delay(() -> {
+                manager.showEmailVerificationDialog(player, user, email, true, null, null);
+            }, 100);
             
                 } catch (Exception e) {
             plugin.getLogger().error("Failed to send verification email: " + e.getMessage());
                     if (plugin.getConfiguration().get(ConfigurationKeys.DEBUG)) {
                         e.printStackTrace();
                     }
-            manager.showEmailInputDialog(player, user, password, passwordConfirm, 
-                plugin.getMessages().getRawMessage("error-mail-not-sent"), "error");
+            // 🔧 修复：延迟显示邮箱输入对话框，防止FancyDialogs认为对话框未打开的警告
+            plugin.delay(() -> {
+                manager.showEmailInputDialog(player, user, password, passwordConfirm, 
+                    plugin.getMessages().getRawMessage("error-mail-not-sent"), "error");
+            }, 100);
         }
     }
 
@@ -1356,9 +1401,12 @@ public class LibreLoginAction implements DialogAction {
             String hash = tokenParts[3];
 
             if (!expectedCode.equals(verificationCode)) {
-                // Wrong verification code
-                manager.showEmailVerificationDialog(player, user, emailVerifyData.email(), true,
-                    plugin.getMessages().getRawMessage("error-verification-code-wrong"), "error");
+                // Wrong verification code with delay to prevent race condition
+                // 🔧 修复：延迟显示邮箱验证对话框，防止FancyDialogs认为对话框未打开的警告
+                plugin.delay(() -> {
+                    manager.showEmailVerificationDialog(player, user, emailVerifyData.email(), true,
+                        plugin.getMessages().getRawMessage("error-verification-code-wrong"), "error");
+                }, 100);
                 return;
             }
 
@@ -1405,8 +1453,12 @@ public class LibreLoginAction implements DialogAction {
         } else {
             // This is regular email verification (not registration)
             if (!emailVerifyData.token().equals(verificationCode)) {
-                manager.showEmailVerificationDialog(player, user, emailVerifyData.email(), true,
-                    plugin.getMessages().getRawMessage("error-verification-code-wrong"), "error");
+                // Wrong verification code with delay to prevent race condition
+                // 🔧 修复：延迟显示邮箱验证对话框，防止FancyDialogs认为对话框未打开的警告
+                plugin.delay(() -> {
+                    manager.showEmailVerificationDialog(player, user, emailVerifyData.email(), true,
+                        plugin.getMessages().getRawMessage("error-verification-code-wrong"), "error");
+                }, 100);
                 return;
             }
             
@@ -1431,8 +1483,11 @@ public class LibreLoginAction implements DialogAction {
             return;
         }
 
-        // Show register dialog
-        manager.showRegisterDialog(player, user);
+        // Show register dialog with delay to prevent race condition
+        // 🔧 修复：延迟显示注册对话框，防止FancyDialogs认为对话框未打开的警告
+        plugin.delay(() -> {
+            manager.showRegisterDialog(player, user);
+        }, 100);
     }
 
     /**
@@ -1723,150 +1778,12 @@ public class LibreLoginAction implements DialogAction {
     }
 
     /**
-     * Opens CustomScreenMenu for the player if enabled in configuration.
+     * Handles post-login actions after successful authentication.
      * This method is called after announcement confirmation or after login when no announcement is needed.
      *
-     * @param player the player to open the menu for
+     * @param player the player who has completed login
      */
-    private void openCustomScreenMenu(Player player) {
-        // Check if CustomScreenMenu is enabled
-        Boolean enabled = plugin.getConfiguration().get(ConfigurationKeys.CUSTOM_SCREEN_MENU_ENABLED);
-        if (enabled == null || !enabled) {
-            return;
-        }
-
-        // Get menu name from configuration
-        String menuName = plugin.getConfiguration().get(ConfigurationKeys.CUSTOM_SCREEN_MENU_NAME);
-        if (menuName == null || menuName.trim().isEmpty()) {
-            plugin.getLogger().warn("CustomScreenMenu menu name is not configured");
-            return;
-        }
-
-        // Get delay from configuration
-        Integer delayConfig = plugin.getConfiguration().get(ConfigurationKeys.CUSTOM_SCREEN_MENU_DELAY);
-        int delay = delayConfig != null ? delayConfig : 500;
-        long delayTicks = delay / 50;
-
-        // Schedule menu opening with delay - use main thread for command execution
-        Bukkit.getScheduler().runTaskLater(plugin.getBootstrap(), () -> {
-            if (!player.isOnline()) {
-                return;
-            }
-
-            // Check if player is still authorized
-            if (!plugin.getAuthorizationProvider().isAuthorized(player)) {
-                return;
-            }
-
-            // Check if CustomScreenMenu plugin is installed
-            Plugin customScreenMenuPlugin = Bukkit.getPluginManager().getPlugin("CustomScreenMenu");
-            if (customScreenMenuPlugin == null || !customScreenMenuPlugin.isEnabled()) {
-                plugin.getLogger().warn("CustomScreenMenu plugin is not installed or not enabled");
-                return;
-            }
-
-            try {
-                // Try to use CustomScreenMenu API first
-                boolean opened = tryOpenMenuViaAPI(customScreenMenuPlugin, player, menuName);
-                
-                if (!opened) {
-                    // Fallback to command execution
-                    opened = tryOpenMenuViaCommand(player, menuName);
-                }
-                
-                if (!opened) {
-                    plugin.getLogger().warn("Failed to open CustomScreenMenu for " + player.getName() + " with menu: " + menuName);
-                }
-            } catch (Exception e) {
-                plugin.getLogger().error("Error opening CustomScreenMenu for " + player.getName() + ": " + e.getMessage());
-                if (plugin.getConfiguration().get(ConfigurationKeys.DEBUG)) {
-                    e.printStackTrace();
-                }
-            }
-        }, delayTicks);
-    }
-
-    /**
-     * Attempts to open CustomScreenMenu via API using reflection.
-     * Based on CustomScreenMenu source code analysis:
-     * - Main class: com.example.ui.CursorMenuPlugin
-     * - API method: setupCursor(Player player, String key)
-     * 
-     * @param pluginInstance the CustomScreenMenu plugin instance
-     * @param player the player to open the menu for
-     * @param menuName the name of the menu to open
-     * @return true if menu was opened successfully, false otherwise
-     */
-    private boolean tryOpenMenuViaAPI(Plugin pluginInstance, Player player, String menuName) {
-        try {
-            Class<?> pluginClass = pluginInstance.getClass();
-            
-            // Try the known API method: setupCursor(Player, String)
-            try {
-                java.lang.reflect.Method setupCursorMethod = pluginClass.getMethod("setupCursor", org.bukkit.entity.Player.class, String.class);
-                setupCursorMethod.invoke(pluginInstance, player, menuName);
-                plugin.getLogger().info("[CustomScreenMenu] Opened menu '" + menuName + "' for " + player.getName() + " via API");
-                return true;
-            } catch (NoSuchMethodException e) {
-                // Method not found, try alternatives
-            }
-            
-            // Fallback: Try to find the method with different names
-            String[] possibleMethodNames = {
-                "setupCursor", "openMenu", "startMenu", "showMenu"
-            };
-            
-            for (String methodName : possibleMethodNames) {
-                try {
-                    java.lang.reflect.Method method = pluginClass.getMethod(methodName, org.bukkit.entity.Player.class, String.class);
-                    method.invoke(pluginInstance, player, menuName);
-                    plugin.getLogger().info("[CustomScreenMenu] Opened menu '" + menuName + "' for " + player.getName() + " via API (" + methodName + ")");
-                    return true;
-                } catch (NoSuchMethodException e) {
-                    continue;
-                }
-            }
-            
-            return false;
-        } catch (Exception e) {
-            if (plugin.getConfiguration().get(ConfigurationKeys.DEBUG)) {
-                plugin.getLogger().warn("[CustomScreenMenu] Error calling API: " + e.getMessage());
-                e.printStackTrace();
-            }
-            return false;
-        }
-    }
-
-    /**
-     * Attempts to open CustomScreenMenu via command execution.
-     * Based on CustomScreenMenu source code, the command format is:
-     * - cursormenu run <menu-name> (for self)
-     * - cursormenu run <menu-name> <player> (for other player)
-     * 
-     * @param player the player to open the menu for
-     * @param menuName the name of the menu to open
-     * @return true if command executed successfully, false otherwise
-     */
-    private boolean tryOpenMenuViaCommand(Player player, String menuName) {
-        try {
-            // Based on Commands.java, the correct command format is: cursormenu run <menu-name>
-            String command = "cursormenu run " + menuName;
-            boolean success = player.performCommand(command);
-            
-            if (success) {
-                return true;
-            }
-            
-            // Try alternative: cmenu run <menu-name>
-            command = "cmenu run " + menuName;
-            success = player.performCommand(command);
-            
-            return success;
-        } catch (Exception e) {
-            if (plugin.getConfiguration().get(ConfigurationKeys.DEBUG)) {
-                plugin.getLogger().warn("[CustomScreenMenu] Error executing command: " + e.getMessage());
-            }
-            return false;
-        }
+    private void handlePostLoginActions(Player player) {
+        // Post-login actions can be added here in the future if needed
     }
 }

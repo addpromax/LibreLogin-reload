@@ -98,8 +98,9 @@ public class AuthenticAuthorizationProvider<P, S> extends AuthenticHandler<P, S>
      *
      * @param user the user data
      * @param player the player
+     * @param reason the authentication reason
      */
-    private void checkAndShowAnnouncement(User user, P player) {
+    private void checkAndShowAnnouncement(User user, P player, AuthenticatedEvent.AuthenticationReason reason) {
         // Only show announcements on Paper with FancyDialogs
         if (!(plugin instanceof xyz.kyngs.librelogin.paper.PaperLibreLogin paperPlugin)) {
             return;
@@ -130,8 +131,7 @@ public class AuthenticAuthorizationProvider<P, S> extends AuthenticHandler<P, S>
                 if (plugin.getConfiguration().get(ConfigurationKeys.DEBUG)) {
                     plugin.getLogger().debug("Announcements disabled in announcement.yml");
                 }
-                // Announcements are disabled, open CustomScreenMenu directly
-                openCustomScreenMenuAfterLogin(bukkitPlayer);
+                // Announcements are disabled
                 return;
             }
 
@@ -160,8 +160,7 @@ public class AuthenticAuthorizationProvider<P, S> extends AuthenticHandler<P, S>
                         + " has already seen current announcement (hash: " + currentAnnouncementHash + ")");
                 }
                 
-                // Player has already seen the announcement, open CustomScreenMenu if enabled
-                openCustomScreenMenuAfterLogin(bukkitPlayer);
+                // Player has already seen the announcement
             }
         } catch (Exception e) {
             plugin.getLogger().error("Error checking announcement for player " + player + ": " + e.getMessage());
@@ -226,7 +225,7 @@ public class AuthenticAuthorizationProvider<P, S> extends AuthenticHandler<P, S>
         }
         
         // Check and show announcement after successful authorization
-        checkAndShowAnnouncement(user, player);
+        checkAndShowAnnouncement(user, player, reason);
     }
 
     /**
@@ -236,9 +235,10 @@ public class AuthenticAuthorizationProvider<P, S> extends AuthenticHandler<P, S>
      *
      * @param user the user data
      * @param player the player
+     * @param reason the authentication reason
      */
-    public void checkAndShowAnnouncementForAuthenticatedEvent(User user, P player) {
-        checkAndShowAnnouncement(user, player);
+    public void checkAndShowAnnouncementForAuthenticatedEvent(User user, P player, AuthenticatedEvent.AuthenticationReason reason) {
+        checkAndShowAnnouncement(user, player, reason);
     }
 
     /**
@@ -261,33 +261,7 @@ public class AuthenticAuthorizationProvider<P, S> extends AuthenticHandler<P, S>
         }
     }
 
-    /**
-     * Opens CustomScreenMenu for the player after login if enabled.
-     * This is called when the player has already seen the announcement or when announcement is disabled.
-     *
-     * @param bukkitPlayer the Bukkit player
-     */
-    private void openCustomScreenMenuAfterLogin(org.bukkit.entity.Player bukkitPlayer) {
-        // Only open menu on Paper servers with DialogManager
-        if (!(plugin instanceof xyz.kyngs.librelogin.paper.PaperLibreLogin paperPlugin)) {
-            return;
-        }
 
-        var dialogManager = paperPlugin.getDialogManager();
-        if (dialogManager == null || !dialogManager.isAvailable()) {
-            return;
-        }
-
-        try {
-            // Open CustomScreenMenu through DialogManager
-            dialogManager.openCustomScreenMenu(bukkitPlayer);
-        } catch (Exception e) {
-            plugin.getLogger().error("Error opening CustomScreenMenu for player " + bukkitPlayer.getName() + ": " + e.getMessage());
-            if (plugin.getConfiguration().get(ConfigurationKeys.DEBUG)) {
-                e.printStackTrace();
-            }
-        }
-    }
 
     @Override
     public boolean confirmTwoFactorAuth(P player, Integer code, User user) {

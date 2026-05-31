@@ -17,7 +17,9 @@ import xyz.kyngs.librelogin.common.config.MessageKeys;
 import xyz.kyngs.librelogin.paper.PaperLibreLogin;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Dialog for displaying server announcements.
@@ -97,9 +99,13 @@ public class AnnouncementDialog {
 
         // Create buttons list
         List<DialogButton> buttons = new ArrayList<>();
-        buttons.add(new DialogButton(buttonText, null, List.of(
-            new DialogButton.DialogAction("librelogin_announcement_confirm", "librelogin_announcement_confirm")
-        )));
+        buttons.add(new DialogButton(
+                buttonText, 
+                null, 
+                List.of(new DialogButton.DialogAction("librelogin_announcement_confirm", "librelogin_announcement_confirm")),
+                new HashMap<>(), // requirements
+                150 // width
+        ));
 
         // Create dialog data
         DialogData dialogData = new DialogData(
@@ -108,7 +114,9 @@ public class AnnouncementDialog {
             canCloseWithEscape,
             bodyList,
             new DialogInputs(List.of(), List.of(), List.of()),
-            buttons
+            buttons,
+            null, // exitAction
+            null  // columns (use default)
         );
 
         // Create dialog

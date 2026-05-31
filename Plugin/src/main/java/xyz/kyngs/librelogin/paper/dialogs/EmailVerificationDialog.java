@@ -19,7 +19,9 @@ import xyz.kyngs.librelogin.common.config.MessageKeys;
 import xyz.kyngs.librelogin.paper.PaperLibreLogin;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Email verification dialog for FancyDialogs integration.
@@ -116,7 +118,9 @@ public class EmailVerificationDialog {
                 1,
                 "",
                 16, // Verification codes are typically short
-                1
+                1,
+                new HashMap<>(), // requirements
+                null // width (use default)
         );
         textFields.add(codeField);
 
@@ -130,7 +134,13 @@ public class EmailVerificationDialog {
         List<DialogButton.DialogAction> verifyActions = new ArrayList<>();
         // 使用占位符，FancyDialogs 会自动替换为用户输入
         verifyActions.add(new DialogButton.DialogAction("librelogin_email_verify", "{verification_code}"));
-        DialogButton verifyButton = new DialogButton(verifyButtonText, null, verifyActions);
+        DialogButton verifyButton = new DialogButton(
+                verifyButtonText, 
+                null, 
+                verifyActions, 
+                new HashMap<>(), // requirements
+                150 // width
+        );
         buttons.add(verifyButton);
 
         // Resend email button (only shown if allowed)
@@ -138,7 +148,13 @@ public class EmailVerificationDialog {
             String resendButtonText = plugin.getMessages().getRawMessage(MessageKeys.DIALOG_BUTTON_RESEND_EMAIL.key());
             List<DialogButton.DialogAction> resendActions = new ArrayList<>();
             resendActions.add(new DialogButton.DialogAction("librelogin_resend_registration_email", "librelogin_resend_registration_email"));
-            DialogButton resendButton = new DialogButton(resendButtonText, null, resendActions);
+            DialogButton resendButton = new DialogButton(
+                    resendButtonText, 
+                    null, 
+                    resendActions, 
+                    new HashMap<>(), // requirements
+                    150 // width
+            );
             buttons.add(resendButton);
         }
 
@@ -146,14 +162,26 @@ public class EmailVerificationDialog {
         String backButtonText = plugin.getMessages().getRawMessage(MessageKeys.DIALOG_BUTTON_BACK_TO_LOGIN.key());
         List<DialogButton.DialogAction> backActions = new ArrayList<>();
         backActions.add(new DialogButton.DialogAction("librelogin_back_to_register", "librelogin_back_to_register"));
-        DialogButton backButton = new DialogButton(backButtonText, null, backActions);
+        DialogButton backButton = new DialogButton(
+                backButtonText, 
+                null, 
+                backActions, 
+                new HashMap<>(), // requirements
+                150 // width
+        );
         buttons.add(backButton);
 
         // Disconnect button
         String disconnectButtonText = plugin.getMessages().getRawMessage(MessageKeys.DIALOG_BUTTON_DISCONNECT.key());
         List<DialogButton.DialogAction> disconnectActions = new ArrayList<>();
         disconnectActions.add(new DialogButton.DialogAction("librelogin_disconnect", "librelogin_disconnect"));
-        DialogButton disconnectButton = new DialogButton(disconnectButtonText, null, disconnectActions);
+        DialogButton disconnectButton = new DialogButton(
+                disconnectButtonText, 
+                null, 
+                disconnectActions, 
+                new HashMap<>(), // requirements
+                150 // width
+        );
         buttons.add(disconnectButton);
 
         // Create dialog data
@@ -163,7 +191,9 @@ public class EmailVerificationDialog {
                 canCloseWithEscape,
                 bodyList,
                 inputs,
-                buttons
+                buttons,
+                null, // exitAction
+                null  // columns (use default)
         );
 
         return manager.getFancyDialogs().createDialog(data);

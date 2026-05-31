@@ -161,6 +161,21 @@ public class ConfigurationKeys {
             ConfigurateHelper::getBoolean
     );
 
+    public static final ConfigurationKey<Boolean> ALLOW_OFFLINE_MODE_FOR_PREMIUM = new ConfigurationKey<>(
+            "allow-offline-mode-for-premium",
+            false,
+            """
+                    Should we disable premium verification when using CRACKED UUID creator?
+                    When enabled and new-uuid-creator is set to CRACKED:
+                    - Premium usernames will NOT be forced to use online mode
+                    - All players (including premium names) can register/login in offline mode
+                    - Premium auto-login will be disabled for everyone
+                    This is useful for fully offline/cracked servers that don't want any premium verification.
+                    !!WARNING: When enabled, premium players will need to register manually like cracked players!!
+                    """,
+            ConfigurateHelper::getBoolean
+    );
+
     public static final ConfigurationKey<Integer> MILLISECONDS_TO_REFRESH_NOTIFICATION = new ConfigurationKey<>(
             "milliseconds-to-refresh-notification",
             10000,
@@ -661,42 +676,6 @@ public class ConfigurationKeys {
             ConfigurateHelper::getInt
     );
 
-    private static final ConfigurationKey<?> CUSTOM_SCREEN_MENU = ConfigurationKey.getComment(
-            "custom-screen-menu",
-            """
-                    This section is used for configuring the CustomScreenMenu integration.
-                    Players will be sent to a CustomScreenMenu after successful login and announcement.
-                    """
-    );
 
-    public static final ConfigurationKey<Boolean> CUSTOM_SCREEN_MENU_ENABLED = new ConfigurationKey<>(
-            "custom-screen-menu.enabled",
-            false,
-            """
-                    Should we open CustomScreenMenu for players after login?
-                    This requires CustomScreenMenu plugin to be installed.
-                    """,
-            ConfigurateHelper::getBoolean
-    );
-
-    public static final ConfigurationKey<String> CUSTOM_SCREEN_MENU_NAME = new ConfigurationKey<>(
-            "custom-screen-menu.menu-name",
-            "main",
-            """
-                    The name of the menu to open after login.
-                    This should match a menu defined in CustomScreenMenu's menu folder.
-                    """,
-            ConfigurateHelper::getString
-    );
-
-    public static final ConfigurationKey<Integer> CUSTOM_SCREEN_MENU_DELAY = new ConfigurationKey<>(
-            "custom-screen-menu.delay",
-            500,
-            """
-                    The delay in milliseconds before opening the menu after announcement confirmation or login.
-                    This gives time for the player to fully load before opening the menu.
-                    """,
-            ConfigurateHelper::getInt
-    );
 
 }

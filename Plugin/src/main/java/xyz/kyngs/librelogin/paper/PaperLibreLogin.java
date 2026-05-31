@@ -28,6 +28,8 @@ import xyz.kyngs.librelogin.common.image.AuthenticImageProjector;
 import xyz.kyngs.librelogin.paper.image.VirtualMapProjector;
 import xyz.kyngs.librelogin.common.util.CancellableTask;
 import xyz.kyngs.librelogin.paper.protocol.PacketListener;
+import xyz.kyngs.librelogin.paper.scheduler.SchedulerAdapter;
+import xyz.kyngs.librelogin.paper.scheduler.SchedulerFactory;
 
 import java.io.File;
 import java.io.InputStream;
@@ -45,11 +47,16 @@ public class PaperLibreLogin extends AuthenticLibreLogin<Player, World> {
     private VirtualMapProjector virtualMapProjector;
     private xyz.kyngs.librelogin.common.config.AnnouncementManager announcementManager;
     private boolean usingExternalPacketEvents;
+    private final SchedulerAdapter scheduler;
 
     public PaperLibreLogin(PaperBootstrap bootstrap) {
         this.bootstrap = bootstrap;
         this.started = false;
         this.usingExternalPacketEvents = false;
+        
+        // Initialize scheduler adapter based on platform (Bukkit/Paper or Folia)
+        this.scheduler = SchedulerFactory.createScheduler();
+        bootstrap.getSLF4JLogger().info("Using " + scheduler.getSchedulerType() + " scheduler adapter");
 
         // Check if PacketEvents is already loaded as an external plugin
         var packetEventsPlugin = Bukkit.getPluginManager().getPlugin("packetevents");
@@ -121,7 +128,7 @@ public class PaperLibreLogin extends AuthenticLibreLogin<Player, World> {
 
     @Override
     protected boolean mainThread() {
-        return Bukkit.isPrimaryThread() && started;
+        return scheduler.isPrimaryThread() && started;
     }
 
     @Override
@@ -194,7 +201,7 @@ public class PaperLibreLogin extends AuthenticLibreLogin<Player, World> {
                         // Call checkAndShowAnnouncement for premium/session login
                         // This will handle both announcement and CustomScreenMenu
                         var authenticProvider = (xyz.kyngs.librelogin.common.authorization.AuthenticAuthorizationProvider<org.bukkit.entity.Player, org.bukkit.World>) authProvider;
-                        authenticProvider.checkAndShowAnnouncementForAuthenticatedEvent(user, bukkitPlayer);
+                        authenticProvider.checkAndShowAnnouncementForAuthenticatedEvent(user, bukkitPlayer, event.getReason());
                     }
                 }
             }
@@ -286,15 +293,12 @@ public class PaperLibreLogin extends AuthenticLibreLogin<Player, World> {
 
     @Override
     public CancellableTask delay(Runnable runnable, long delayInMillis) {
-        var task = Bukkit.getScheduler().runTaskLaterAsynchronously(bootstrap, runnable, delayInMillis / 50);
-        return task::cancel;
+        return scheduler.runTaskLaterAsynchronously(bootstrap, runnable, delayInMillis / 50);
     }
 
     @Override
     public CancellableTask repeat(Runnable runnable, long delayInMillis, long repeatInMillis) {
-        var task = Bukkit.getScheduler()
-                .runTaskTimerAsynchronously(bootstrap, runnable, delayInMillis / 50, repeatInMillis / 50);
-        return task::cancel;
+        return scheduler.runTaskTimerAsynchronously(bootstrap, runnable, delayInMillis / 50, repeatInMillis / 50);
     }
 
     @Override
@@ -366,5 +370,14 @@ public class PaperLibreLogin extends AuthenticLibreLogin<Player, World> {
      */
     public xyz.kyngs.librelogin.paper.inventory.InventoryManager getInventoryManager() {
         return inventoryManager;
+    }
+
+    /**
+     * Gets the scheduler adapter for this platform.
+     *
+     * @return the scheduler adapter (Bukkit or Folia)
+     */
+    public SchedulerAdapter getScheduler() {
+        return scheduler;
     }
 }

@@ -18,7 +18,9 @@ import xyz.kyngs.librelogin.common.config.MessageKeys;
 import xyz.kyngs.librelogin.paper.PaperLibreLogin;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Email status dialog for showing email binding status before password reset.
@@ -100,7 +102,13 @@ public class EmailStatusDialog {
             String continueButtonText = plugin.getMessages().getRawMessage(MessageKeys.DIALOG_BUTTON_CONTINUE_RESET.key());
             List<DialogButton.DialogAction> continueActions = new ArrayList<>();
             continueActions.add(new DialogButton.DialogAction("librelogin_continue_password_reset", "librelogin_continue_password_reset"));
-            DialogButton continueButton = new DialogButton(continueButtonText, null, continueActions);
+            DialogButton continueButton = new DialogButton(
+                    continueButtonText, 
+                    null, 
+                    continueActions, 
+                    new HashMap<>(), // requirements
+                    150 // width
+            );
             buttons.add(continueButton);
         }
 
@@ -108,7 +116,13 @@ public class EmailStatusDialog {
         String backButtonText = plugin.getMessages().getRawMessage(MessageKeys.DIALOG_BUTTON_BACK_TO_LOGIN.key());
         List<DialogButton.DialogAction> backActions = new ArrayList<>();
         backActions.add(new DialogButton.DialogAction("librelogin_back_to_login", "librelogin_back_to_login"));
-        DialogButton backButton = new DialogButton(backButtonText, null, backActions);
+        DialogButton backButton = new DialogButton(
+                backButtonText, 
+                null, 
+                backActions, 
+                new HashMap<>(), // requirements
+                150 // width
+        );
         buttons.add(backButton);
 
         // Create dialog data
@@ -118,7 +132,9 @@ public class EmailStatusDialog {
                 canCloseWithEscape,
                 bodyList,
                 inputs,
-                buttons
+                buttons,
+                null, // exitAction
+                null  // columns (use default)
         );
 
         return manager.getFancyDialogs().createDialog(data);

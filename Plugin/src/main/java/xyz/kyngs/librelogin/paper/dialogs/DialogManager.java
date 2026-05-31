@@ -348,7 +348,15 @@ public class DialogManager implements Listener {
         Dialog dialog = activeDialogs.remove(player.getUniqueId());
         if (dialog != null) {
             try {
+                // 🔧 修复：先从DialogRegistry注销对话框，防止FancyDialogs认为对话框仍然打开
+                fancyDialogs.getDialogRegistry().unregister(dialog.getId());
+                
+                // 然后关闭对话框
                 dialog.close(player);
+                
+                if (plugin.getConfiguration().get(ConfigurationKeys.DEBUG)) {
+                    plugin.getLogger().debug("Closed and unregistered dialog " + dialog.getId() + " for player: " + player.getName());
+                }
             } catch (Exception e) {
                 plugin.getLogger().debug("Failed to close dialog for " + player.getName() + ": " + e.getMessage());
             }
@@ -374,73 +382,6 @@ public class DialogManager implements Listener {
     }
 
     /**
-     * Opens CustomScreenMenu for the player if enabled in configuration.
-     * This method can be called from AuthenticAuthorizationProvider.
-     *
-     * @param player the player to open the menu for
-     */
-    public void openCustomScreenMenu(org.bukkit.entity.Player player) {
-        if (!isAvailable()) {
-            return;
-        }
-
-        Boolean enabled = plugin.getConfiguration().get(ConfigurationKeys.CUSTOM_SCREEN_MENU_ENABLED);
-        if (enabled == null || !enabled) {
-            return;
-        }
-
-        String menuName = plugin.getConfiguration().get(ConfigurationKeys.CUSTOM_SCREEN_MENU_NAME);
-        if (menuName == null || menuName.trim().isEmpty()) {
-            plugin.getLogger().warn("CustomScreenMenu menu name is not configured");
-            return;
-        }
-
-        Integer delayConfig = plugin.getConfiguration().get(ConfigurationKeys.CUSTOM_SCREEN_MENU_DELAY);
-        int delay = delayConfig != null ? delayConfig : 500;
-        long delayTicks = delay / 50;
-
-        // Use main thread for command execution
-        org.bukkit.Bukkit.getScheduler().runTaskLater(plugin.getBootstrap(), () -> {
-            if (!player.isOnline()) {
-                return;
-            }
-
-            if (!plugin.getAuthorizationProvider().isAuthorized(player)) {
-                return;
-            }
-
-            org.bukkit.plugin.Plugin customScreenMenuPlugin = org.bukkit.Bukkit.getPluginManager().getPlugin("CustomScreenMenu");
-            if (customScreenMenuPlugin == null || !customScreenMenuPlugin.isEnabled()) {
-                plugin.getLogger().warn("CustomScreenMenu plugin is not installed or not enabled");
-                return;
-            }
-
-            try {
-                // Try to use CustomScreenMenu API first
-                boolean opened = tryOpenMenuViaAPI(customScreenMenuPlugin, player, menuName);
-                
-                if (!opened) {
-                    // Fallback to command execution
-                    opened = tryOpenMenuViaCommand(player, menuName);
-                }
-                
-                if (!opened) {
-                    plugin.getLogger().warn("Failed to open CustomScreenMenu for " + player.getName() + " with menu: " + menuName);
-                }
-            } catch (Exception e) {
-                plugin.getLogger().error("Error opening CustomScreenMenu for " + player.getName() + ": " + e.getMessage());
-                if (plugin.getConfiguration().get(ConfigurationKeys.DEBUG)) {
-                    e.printStackTrace();
-                }
-            }
-        }, delayTicks);
-    }
-
-    /**
-     * Attempts to open CustomScreenMenu via API using reflection.
-     * Based on CustomScreenMenu source code analysis:
-     * - Main class: com.example.ui.CursorMenuPlugin
-     * - API method: setupCursor(Player player, String key)
      * 
      * @param pluginInstance the CustomScreenMenu plugin instance
      * @param player the player to open the menu for

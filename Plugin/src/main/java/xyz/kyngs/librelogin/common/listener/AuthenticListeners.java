@@ -76,6 +76,29 @@ public class AuthenticListeners<Plugin extends AuthenticLibreLogin<P, S>, P, S> 
             return new PreLoginResult(PreLoginState.DENIED, plugin.getMessages().getMessage("kick-illegal-username"), null);
         }
 
+        // Check if premium verification should be disabled (allow offline mode for premium names)
+        boolean allowOfflineModeForPremium = plugin.getConfiguration().get(ConfigurationKeys.ALLOW_OFFLINE_MODE_FOR_PREMIUM);
+        boolean usingCrackedUUID = "CRACKED".equalsIgnoreCase(plugin.getConfiguration().get(ConfigurationKeys.NEW_UUID_CREATOR));
+
+        // If offline mode is allowed for premium and using CRACKED UUID creator, skip premium verification entirely
+        // This allows premium usernames to be used in offline mode without premium authentication
+        if (allowOfflineModeForPremium && usingCrackedUUID) {
+            if (plugin.getConfiguration().get(ConfigurationKeys.DEBUG)) {
+                plugin.getLogger().debug("Premium verification disabled for user " + username + " (allow-offline-mode-for-premium is enabled)");
+            }
+            
+            // Treat all players as cracked/offline players - no Mojang API check
+            User user;
+            try {
+                user = checkAndValidateByName(username, null, true, address);
+            } catch (InvalidCommandArgument e) {
+                return new PreLoginResult(PreLoginState.DENIED, e.getUserFuckUp(), null);
+            }
+
+            // Always use offline mode - no premium auto-login
+            return new PreLoginResult(PreLoginState.FORCE_OFFLINE, null, null);
+        }
+
         PremiumUser mojangData;
 
         try {

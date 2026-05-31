@@ -40,6 +40,7 @@ alt="Contributors listed"></img>
 - [x] Velocity
 - [x] BungeeCord
 - [x] Paper
+- [x] Folia
 
 ## References
 

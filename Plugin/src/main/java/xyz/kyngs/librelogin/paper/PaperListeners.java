@@ -56,15 +56,26 @@ import static xyz.kyngs.librelogin.paper.protocol.ProtocolUtil.getServerVersion;
 public class PaperListeners extends AuthenticListeners<PaperLibreLogin, Player, World> implements Listener {
 
     private static final String ENCRYPTION_CLASS_NAME = "MinecraftEncryption";
-    private static final Class<?> ENCRYPTION_CLASS;
+    private static final boolean MODERN_NMS = isModernNms();
+    private static final Class<?> ENCRYPTION_CLASS = MODERN_NMS ? null : resolveEncryptionClass();
     private static Method encryptMethod;
     private static Method cipherMethod;
 
-    static {
+    private static boolean isModernNms() {
         try {
-            ENCRYPTION_CLASS = Class.forName("net.minecraft.util." + ENCRYPTION_CLASS_NAME);
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
+            String minecraftVersion = Bukkit.getMinecraftVersion();
+            int major = Integer.parseInt(minecraftVersion.split("\\.")[0]);
+            return major >= 26;
+        } catch (Exception ignored) {
+            return false;
+        }
+    }
+
+    private static Class<?> resolveEncryptionClass() {
+        try {
+            return Class.forName("net.minecraft.util." + ENCRYPTION_CLASS_NAME);
+        } catch (ClassNotFoundException ignored) {
+            return null;
         }
     }
 
@@ -390,7 +401,9 @@ public class PaperListeners extends AuthenticListeners<PaperLibreLogin, Player, 
                 encryptMethod = Reflection.getMethod(networkManagerClass, "setEncryptionKey", Cipher.class, Cipher.class);
 
                 // Get the needed Cipher helper method (used to generate ciphers from login key)
-                cipherMethod = Reflection.getMethod(ENCRYPTION_CLASS, "a", int.class, Key.class);
+                if (ENCRYPTION_CLASS != null) {
+                    cipherMethod = Reflection.getMethod(ENCRYPTION_CLASS, "a", int.class, Key.class);
+                }
             }
         }
 

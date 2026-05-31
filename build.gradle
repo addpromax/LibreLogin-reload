@@ -1,8 +1,6 @@
-plugins {
-    id 'org.cadixdev.licenser' version '0.6.1'
-}
+// Removed licenser plugin - no longer maintained and incompatible with Gradle 9.4.1
 
-defaultTasks 'updateLicenses', 'shadowJar'
+defaultTasks 'shadowJar'
 
 version '0.24.0'
 
@@ -10,24 +8,12 @@ subprojects {
     version = rootProject.version
     group = 'xyz.kyngs.librelogin'
 
-    apply plugin: 'org.cadixdev.licenser'
-
     repositories {
         mavenLocal()
         mavenCentral()
 
         maven {
             url 'https://jitpack.io'
-        }
-    }
-
-    license {
-        header = rootProject.file('HEADER.txt')
-        include '**/*.java'
-        newLine = true
-
-        matching("**/protocollib/EncryptionUtil.java") {
-            header = rootProject.file("licenses/FASTLOGIN_LICENSE")
         }
     }
 

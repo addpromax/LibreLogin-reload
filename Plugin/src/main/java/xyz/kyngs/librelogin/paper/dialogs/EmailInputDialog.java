@@ -19,6 +19,7 @@ import xyz.kyngs.librelogin.common.config.MessageKeys;
 import xyz.kyngs.librelogin.paper.PaperLibreLogin;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -95,7 +96,9 @@ public class EmailInputDialog {
                 1,
                 "",
                 254, // RFC 5321 maximum email address length
-                1
+                1,
+                new HashMap<>(), // requirements
+                null // width (use default)
         );
         textFields.add(emailField);
 
@@ -111,21 +114,39 @@ public class EmailInputDialog {
         // 注意：这里的password和passwordConfirm是已经验证过的固定值，email来自用户输入
         // 使用dialog ID作为第一个参数，因为这是表单提交按钮
         submitActions.add(new DialogButton.DialogAction("librelogin_email_input", password + ":" + passwordConfirm + ":{email}"));
-        DialogButton submitButton = new DialogButton(submitButtonText, null, submitActions);
+        DialogButton submitButton = new DialogButton(
+                submitButtonText, 
+                null, 
+                submitActions, 
+                new HashMap<>(), // requirements
+                150 // width
+        );
         buttons.add(submitButton);
 
         // Back to register button
         String backButtonText = plugin.getMessages().getRawMessage(MessageKeys.DIALOG_BUTTON_BACK_TO_REGISTER.key());
         List<DialogButton.DialogAction> backActions = new ArrayList<>();
         backActions.add(new DialogButton.DialogAction("librelogin_back_to_register", "librelogin_back_to_register"));
-        DialogButton backButton = new DialogButton(backButtonText, null, backActions);
+        DialogButton backButton = new DialogButton(
+                backButtonText, 
+                null, 
+                backActions, 
+                new HashMap<>(), // requirements
+                150 // width
+        );
         buttons.add(backButton);
 
         // Disconnect button
         String disconnectButtonText = plugin.getMessages().getRawMessage(MessageKeys.DIALOG_BUTTON_DISCONNECT.key());
         List<DialogButton.DialogAction> disconnectActions = new ArrayList<>();
         disconnectActions.add(new DialogButton.DialogAction("librelogin_disconnect", "librelogin_disconnect"));
-        DialogButton disconnectButton = new DialogButton(disconnectButtonText, null, disconnectActions);
+        DialogButton disconnectButton = new DialogButton(
+                disconnectButtonText, 
+                null, 
+                disconnectActions, 
+                new HashMap<>(), // requirements
+                150 // width
+        );
         buttons.add(disconnectButton);
 
         // Create dialog data
@@ -135,7 +156,9 @@ public class EmailInputDialog {
                 canCloseWithEscape,
                 bodyList,
                 inputs,
-                buttons
+                buttons,
+                null, // exitAction
+                null  // columns (use default)
         );
 
         return manager.getFancyDialogs().createDialog(data);

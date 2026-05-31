@@ -19,7 +19,9 @@ import xyz.kyngs.librelogin.common.config.MessageKeys;
 import xyz.kyngs.librelogin.paper.PaperLibreLogin;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Password reset dialog for FancyDialogs integration.
@@ -91,7 +93,9 @@ public class PasswordResetDialog {
                 1,
                 "",
                 16,
-                1
+                1,
+                new HashMap<>(), // requirements
+                null // width (use default)
         );
         textFields.add(tokenField);
 
@@ -103,7 +107,9 @@ public class PasswordResetDialog {
                 2,
                 "",
                 128,
-                1
+                1,
+                new HashMap<>(), // requirements
+                null // width (use default)
         );
         textFields.add(passwordField);
 
@@ -115,7 +121,9 @@ public class PasswordResetDialog {
                 3,
                 "",
                 128,
-                1
+                1,
+                new HashMap<>(), // requirements
+                null // width (use default)
         );
         textFields.add(confirmField);
 
@@ -130,14 +138,26 @@ public class PasswordResetDialog {
         // 使用占位符，FancyDialogs 会自动替换为用户输入
         // 格式: reset_token:new_password:new_password_confirm
         resetActions.add(new DialogButton.DialogAction("librelogin_reset_password", "{reset_token}:{new_password}:{new_password_confirm}"));
-        DialogButton resetButton = new DialogButton(resetButtonText, null, resetActions);
+        DialogButton resetButton = new DialogButton(
+                resetButtonText, 
+                null, 
+                resetActions, 
+                new HashMap<>(), // requirements
+                150 // width
+        );
         buttons.add(resetButton);
 
         // Back to login button
         String backButtonText = plugin.getMessages().getRawMessage(MessageKeys.DIALOG_BUTTON_BACK_TO_LOGIN.key());
         List<DialogButton.DialogAction> backActions = new ArrayList<>();
         backActions.add(new DialogButton.DialogAction("librelogin_back_to_login", "librelogin_back_to_login"));
-        DialogButton backButton = new DialogButton(backButtonText, null, backActions);
+        DialogButton backButton = new DialogButton(
+                backButtonText, 
+                null, 
+                backActions, 
+                new HashMap<>(), // requirements
+                150 // width
+        );
         buttons.add(backButton);
 
         // Create dialog data
@@ -147,7 +167,9 @@ public class PasswordResetDialog {
                 canCloseWithEscape,
                 bodyList,
                 inputs,
-                buttons
+                buttons,
+                null, // exitAction
+                null  // columns (use default)
         );
 
         return manager.getFancyDialogs().createDialog(data);

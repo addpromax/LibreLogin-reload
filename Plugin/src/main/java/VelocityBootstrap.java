@@ -31,7 +31,7 @@ import java.util.concurrent.Executors;
 @Plugin(
         id = "librelogin",
         name = "LibreLogin",
-        version = "@version@",
+        version = "{{ version }}",
         authors = "kyngs",
         dependencies = {
                 @Dependency(id = "floodgate", optional = true),
