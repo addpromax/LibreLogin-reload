@@ -19,13 +19,17 @@ public record SemanticVersion(int major, int minor, int patch, boolean dev) {
 
     /**
      * Parses a semantic version from a string with format major.minor.patch(-SNAPSHOT)
+     * If patch version is missing, it defaults to 0.
      *
      * @param version The string to parse.
      * @return The parsed semantic version.
      */
     public static SemanticVersion parse(String version) {
         String[] split = version.replace("-SNAPSHOT", "").split("\\.");
-        return new SemanticVersion(Integer.parseInt(split[0]), Integer.parseInt(split[1]), Integer.parseInt(split[2]), version.endsWith("-SNAPSHOT"));
+        int major = Integer.parseInt(split[0]);
+        int minor = split.length > 1 ? Integer.parseInt(split[1]) : 0;
+        int patch = split.length > 2 ? Integer.parseInt(split[2]) : 0;
+        return new SemanticVersion(major, minor, patch, version.endsWith("-SNAPSHOT"));
     }
 
     /**
