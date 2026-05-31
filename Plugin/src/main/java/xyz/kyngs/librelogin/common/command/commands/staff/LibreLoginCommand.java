@@ -45,7 +45,8 @@ public class LibreLoginCommand<P> extends StaffCommand<P> {
     @Default
     public CompletionStage<Void> onAbout(Audience audience) {
         return runAsync(() -> audience.sendMessage(getMessage("info-about",
-                "%version%", plugin.getVersion()
+                "%version%", plugin.getVersion(),
+                "%platform%", plugin.getPlatformHandle().getPlatformIdentifier()
         )));
     }
 

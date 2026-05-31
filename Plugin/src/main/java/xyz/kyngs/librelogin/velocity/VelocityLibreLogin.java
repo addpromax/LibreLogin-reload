@@ -186,7 +186,15 @@ public class VelocityLibreLogin extends AuthenticLibreLogin<Player, RegisteredSe
             redisBungee = new VelocityRedisBungeeIntegration();
         }
         super.enable();
-        getLogger().info("LibreLogin version " + getVersion() + " enabled!");
+        getLogger().info("This server is running FOSS authentication plugin, LibreLogin.");
+        getLogger().info("Version: " + getVersion());
+        getLogger().info("Authors: magicbili, kyngs, and other contributors");
+        getLogger().info("Source: https://github.com/addpromax/LibreLogin-reload");
+        getLogger().info("License: Mozilla Public License 2.0");
+        getLogger().info("Platform: " + getPlatformHandle().getPlatformIdentifier());
+        getLogger().warn("⚠️ WARNING: The original author has stopped updating this plugin.");
+        getLogger().warn("Please DO NOT report issues to the original author's GitHub repository.");
+        getLogger().info("LibreLogin enabled on Velocity!");
     }
 
     @Override

@@ -1,7 +1,24 @@
 
-# LibreLogin
+# LibreLogin - Fork Version
 
-(formerly LibrePremium) is an open-source, multiplatform, and highly customizable authentication plugin with outstanding features and API.
+> **Note: This is a fork version of LibreLogin, adding the following features to the original:**
+
+> - ✨ **Folia Support**
+
+> - ✨ **Email Support**
+
+> - 🎨 **FancyDialogs Interface Support**
+
+> - 🔧 **Ongoing Maintenance**
+
+>
+This fork version is based on the excellent work of the original author, kyngs, and expands and improves upon the original functionality.
+
+---
+
+## 原项目介绍
+
+**LibreLogin** (formerly LibrePremium) is an open-source, multiplatform, and highly customizable authentication plugin with outstanding features and API.
 
 # Quick information
 
@@ -21,7 +38,26 @@ alt="Support available on Discord"></img>
 alt="Contributors listed"></img>
 </a>
 
-## Basic set of features
+## Fork版本新增功能
+
+### 🎨 FancyDialogs界面支持
+- 集成了FancyDialogs插件，提供美观的GUI界面
+- 支持自定义对话框样式和布局
+- 更好的用户交互体验
+
+### ✨ Foila邮件系统
+- 增强的邮件验证功能
+- 支持多种邮件模板
+- 改进的邮件发送机制
+
+### 🔧 持续维护
+- 定期更新以支持最新的Minecraft版本
+- 及时修复发现的bug
+- 社区反馈的功能改进
+
+---
+
+## 原版功能特性
 
 - AutoLogin for premium players
 - TOTP 2FA (Authy, Google Authenticator...) [details](https://github.com/kyngs/LibreLogin/wiki/2FA)
