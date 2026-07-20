@@ -40,6 +40,16 @@ public class AuthenticListeners<Plugin extends AuthenticLibreLogin<P, S>, P, S> 
     }
 
     protected void onPostLogin(P player, User user) {
+        onPostLogin(player, user, null);
+    }
+
+    /**
+     * Completes the normal post-login bookkeeping. When authentication was
+     * completed during Paper's configuration phase, tracking is started and
+     * immediately authorized so the existing authorization/event pipeline is
+     * still used after the Bukkit Player object becomes available.
+     */
+    protected void onPostLogin(P player, User user, AuthenticatedEvent.AuthenticationReason configurationPhaseReason) {
         var ip = platformHandle.getIP(player);
         var uuid = platformHandle.getUUIDForPlayer(player);
         if (plugin.fromFloodgate(uuid)) return;
@@ -49,7 +59,12 @@ public class AuthenticListeners<Plugin extends AuthenticLibreLogin<P, S>, P, S> 
         }
         var sessionTime = Duration.ofSeconds(plugin.getConfiguration().get(ConfigurationKeys.SESSION_TIMEOUT));
 
-        if (user.autoLoginEnabled()) {
+        if (configurationPhaseReason != null) {
+            plugin.getAuthorizationProvider().startTracking(user, player, false);
+            if (!handleConfigurationPhaseAuthentication(player, user, configurationPhaseReason)) {
+                plugin.getAuthorizationProvider().authorize(user, player, configurationPhaseReason);
+            }
+        } else if (user.autoLoginEnabled()) {
             plugin.delay(() -> plugin.getPlatformHandle().getAudienceForPlayer(player).sendMessage(plugin.getMessages().getMessage("info-premium-logged-in")), 500);
             plugin.getEventProvider().fire(plugin.getEventTypes().authenticated, new AuthenticAuthenticatedEvent<>(user, player, plugin, AuthenticatedEvent.AuthenticationReason.PREMIUM));
         } else if (sessionTime != null && user.getLastAuthentication() != null && ip.equals(user.getIp()) && user.getLastAuthentication().toLocalDateTime().plus(sessionTime).isAfter(LocalDateTime.now())) {
@@ -64,6 +79,15 @@ public class AuthenticListeners<Plugin extends AuthenticLibreLogin<P, S>, P, S> 
         var finalUser = user;
         plugin.delay(() -> plugin.getDatabaseProvider().updateUser(finalUser), 0);
 
+    }
+
+    /**
+     * Allows a platform to continue authentication steps that require a live
+     * player object, such as permission-gated 2FA setup after registration.
+     */
+    protected boolean handleConfigurationPhaseAuthentication(
+            P player, User user, AuthenticatedEvent.AuthenticationReason reason) {
+        return false;
     }
 
     protected void onPlayerDisconnect(P player) {

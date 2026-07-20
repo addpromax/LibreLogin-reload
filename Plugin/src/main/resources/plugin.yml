@@ -10,6 +10,8 @@ softdepend:
   - LuckPerms
   - FancyDialogs
   - packetevents
+  - GrimAC
+  - HuHoBot
 
 permissions:
   librelogin.force-2fa:

@@ -71,6 +71,7 @@ repositories {
     maven { url = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/") }
     maven { url = uri("https://repo.codemc.io/repository/maven-releases/") }
     maven { url = uri("https://repo.fancyinnovations.com/releases") }
+    maven { url = uri("https://repo.grim.ac/snapshots") }
 }
 
 sourceSets {
@@ -186,6 +187,8 @@ dependencies {
     compileOnly("org.geysermc.floodgate:api:2.2.0-SNAPSHOT")
     //LuckPerms
     compileOnly("net.luckperms:api:5.4")
+    // GrimAC (provided by the server at runtime)
+    compileOnly("ac.grim.grimac:GrimAPI:1.6.0.9")
 
     //Bungeecord
     compileOnly("net.md-5:bungeecord-api:1.21-R0.4")
@@ -221,4 +224,3 @@ dependencies {
     //NanoLimboPlugin
     compileOnly("com.github.bivashy.NanoLimboPlugin:api:1.0.8")
 }
-

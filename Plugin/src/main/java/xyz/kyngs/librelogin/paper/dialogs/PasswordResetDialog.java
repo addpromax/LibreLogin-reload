@@ -69,15 +69,7 @@ public class PasswordResetDialog {
         
         // Add error message at the top if present
         if (errorMessage != null && !errorMessage.isEmpty()) {
-            String coloredError;
-            if ("warning".equals(errorType)) {
-                // Yellow warning
-                coloredError = "<yellow>⚠ " + errorMessage + "</yellow>\n";
-            } else {
-                // Red error (default)
-                coloredError = "<red>✖ " + errorMessage + "</red>\n";
-            }
-            bodyList.add(new DialogBodyData(coloredError));
+            bodyList.add(new DialogBodyData(DialogContent.status(plugin, errorMessage, errorType)));
         }
         
         bodyList.add(new DialogBodyData(body));

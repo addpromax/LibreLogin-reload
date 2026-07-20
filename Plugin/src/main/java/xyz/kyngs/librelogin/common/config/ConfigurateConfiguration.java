@@ -20,6 +20,7 @@ import xyz.kyngs.librelogin.common.util.GeneralUtil;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.function.Predicate;
 
 public class ConfigurateConfiguration {
 
@@ -28,6 +29,12 @@ public class ConfigurateConfiguration {
     private final HoconConfigurationLoader loader;
 
     public ConfigurateConfiguration(File dataFolder, String name, Collection<BiHolder<Class<?>, String>> defaultKeys, String comment, Logger logger, ConfigurationMigrator... migrators) throws IOException, CorruptedConfigurationException {
+        this(dataFolder, name, defaultKeys, comment, logger, key -> true, migrators);
+    }
+
+    public ConfigurateConfiguration(File dataFolder, String name, Collection<BiHolder<Class<?>, String>> defaultKeys,
+                                    String comment, Logger logger, Predicate<ConfigurationKey<?>> keyFilter,
+                                    ConfigurationMigrator... migrators) throws IOException, CorruptedConfigurationException {
         var revision = migrators.length;
         var file = new File(dataFolder, name);
 
@@ -41,7 +48,9 @@ public class ConfigurateConfiguration {
         );
 
         var extractedKeys = defaultKeys.stream()
-                .map(data -> new BiHolder<>(GeneralUtil.extractKeys(data.key()), data.value()))
+                .map(data -> new BiHolder<>(GeneralUtil.extractKeys(data.key()).stream()
+                        .filter(keyFilter)
+                        .toList(), data.value()))
                 .toList();
 
         for (var key : extractedKeys) {

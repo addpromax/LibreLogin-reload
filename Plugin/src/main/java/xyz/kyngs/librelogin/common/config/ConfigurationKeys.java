@@ -638,6 +638,24 @@ public class ConfigurationKeys {
             ConfigurateHelper::getBoolean
     );
 
+    public static final ConfigurationKey<Boolean> FANCYDIALOGS_USE_CONFIGURATION_PHASE = new ConfigurationKey<>(
+            "fancydialogs.use-configuration-phase",
+            false,
+            """
+                    Should authentication dialogs be shown during Paper's configuration phase, before the player joins?
+                    When enabled, players must complete login or registration before they are allowed to fully join.
+                    This requires Paper 1.21.6 or newer with native Dialog support. When disabled, the normal post-join flow is used.
+                    """,
+            ConfigurateHelper::getBoolean
+    );
+
+    public static final ConfigurationKey<Integer> FANCYDIALOGS_CONFIGURATION_PHASE_TIMEOUT = new ConfigurationKey<>(
+            "fancydialogs.configuration-phase-timeout",
+            60,
+            "The number of seconds a player may remain in the configuration-phase authentication dialog before being disconnected.",
+            ConfigurateHelper::getInt
+    );
+
     private static final ConfigurationKey<?> ANNOUNCEMENT = ConfigurationKey.getComment(
             "announcement",
             """

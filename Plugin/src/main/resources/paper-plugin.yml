@@ -24,6 +24,13 @@ dependencies:
       load: "BEFORE"
       required: false
       join-classpath: true
+    GrimAC:
+      load: "BEFORE"
+      required: false
+      join-classpath: true
+    HuHoBot:
+      load: "BEFORE"
+      required: false
 
 permissions:
   librelogin.force-2fa:

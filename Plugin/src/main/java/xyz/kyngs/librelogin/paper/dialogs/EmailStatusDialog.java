@@ -67,13 +67,7 @@ public class EmailStatusDialog {
         
         // Add error message at the top if present
         if (errorMessage != null && !errorMessage.isEmpty()) {
-            String coloredMessage;
-            switch (errorType) {
-                case "warning" -> coloredMessage = "<yellow>⚠ " + errorMessage + "</yellow>\n";
-                case "success" -> coloredMessage = "<green>✅ " + errorMessage + "</green>\n";
-                default -> coloredMessage = "<red>✖ " + errorMessage + "</red>\n";
-            }
-            bodyList.add(new DialogBodyData(coloredMessage));
+            bodyList.add(new DialogBodyData(DialogContent.status(plugin, errorMessage, errorType)));
         }
 
         // Check if user has email

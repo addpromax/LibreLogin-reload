@@ -81,7 +81,8 @@ public class EmailVerificationDialog {
         // Replace placeholders in body
         int timeoutMinutes = plugin.getConfiguration().get(ConfigurationKeys.EMAIL_VERIFICATION_TIMEOUT) / 60;
         String body = plugin.getMessages().getRawMessage(MessageKeys.DIALOG_EMAIL_VERIFICATION_BODY.key())
-                .replace("%email%", email != null ? email : "未知")
+                .replace("%email%", email != null ? email : plugin.getMessages()
+                        .getRawMessage(MessageKeys.DIALOG_COMMON_UNKNOWN_EMAIL.key()))
                 .replace("%timeout%", String.valueOf(timeoutMinutes));
         
         boolean canCloseWithEscape = plugin.getConfiguration().get(ConfigurationKeys.FANCYDIALOGS_CLOSE_WITH_ESCAPE);
@@ -91,18 +92,7 @@ public class EmailVerificationDialog {
         
         // Add message at the top if present
         if (errorMessage != null && !errorMessage.isEmpty()) {
-            String coloredMessage;
-            if ("warning".equals(errorType)) {
-                // Yellow warning
-                coloredMessage = "<yellow>⚠ " + errorMessage + "</yellow>\n";
-            } else if ("success".equals(errorType)) {
-                // Green success
-                coloredMessage = "<green>✓ " + errorMessage + "</green>\n";
-            } else {
-                // Red error (default)
-                coloredMessage = "<red>✖ " + errorMessage + "</red>\n";
-            }
-            bodyList.add(new DialogBodyData(coloredMessage));
+            bodyList.add(new DialogBodyData(DialogContent.status(plugin, errorMessage, errorType)));
         }
         
         bodyList.add(new DialogBodyData(body));

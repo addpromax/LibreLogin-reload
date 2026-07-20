@@ -40,6 +40,7 @@ public class DialogManager implements Listener {
     private final Map<UUID, Dialog> activeDialogs;
     private final Map<UUID, PendingTwoFactorSetup> pendingTwoFactorSetups;
     private final Map<UUID, BossBar> activeBossBars;
+    private final LibreLoginAction actionHandler;
     private FancyDialogs fancyDialogs;
     private boolean available;
 
@@ -53,12 +54,16 @@ public class DialogManager implements Listener {
     private EmailVerificationDialog emailVerificationDialog;
     private EmailInputDialog emailInputDialog;
     private RegisterConfirmationDialog registerConfirmationDialog;
+    private HuHoBotPasswordResetDialog huhobotPasswordResetDialog;
+    private HuHoBotResetRequestDialog huhobotResetRequestDialog;
+    private HuHoBotIntegration huhobotIntegration;
     private final VirtualMapDropListener virtualMapDropListener;
 
     public DialogManager(PaperLibreLogin plugin) {
         this.plugin = plugin;
         this.activeDialogs = new ConcurrentHashMap<>();
         this.activeBossBars = new ConcurrentHashMap<>();
+        this.actionHandler = new LibreLoginAction(plugin, this);
         
         // 🔧 创建并注册虚拟地图丢出监听器  
         this.virtualMapDropListener = new VirtualMapDropListener(plugin, this);
@@ -134,6 +139,8 @@ public class DialogManager implements Listener {
             emailVerificationDialog = new EmailVerificationDialog(this, plugin);
             emailInputDialog = new EmailInputDialog(this, plugin);
             registerConfirmationDialog = new RegisterConfirmationDialog(this, plugin);
+            huhobotPasswordResetDialog = new HuHoBotPasswordResetDialog(this, plugin);
+            huhobotResetRequestDialog = new HuHoBotResetRequestDialog(this, plugin);
 
             // Register custom dialog actions
             registerDialogActions();
@@ -142,6 +149,8 @@ public class DialogManager implements Listener {
             
             // Register this DialogManager as an event listener for map drop detection
             Bukkit.getPluginManager().registerEvents(this, plugin.getBootstrap());
+            huhobotIntegration = new HuHoBotIntegration(plugin, this);
+            huhobotIntegration.register();
             
             plugin.getLogger().info("FancyDialogs integration initialized successfully!");
             return true;
@@ -167,6 +176,35 @@ public class DialogManager implements Listener {
      */
     public boolean isAvailable() {
         return available;
+    }
+
+    /** Starts a HuHoBot password recovery request for the player. */
+    public void beginHuHoBotPasswordReset(Player player) {
+        if (huhobotIntegration == null) {
+            player.sendMessage(plugin.getMessages().getMessage(MessageKeys.DIALOG_COMMON_HUHOBOT_UNAVAILABLE.key()));
+            return;
+        }
+        huhobotIntegration.begin(player);
+    }
+
+    /** Records a successful normal login for HuHoBot QQ identity promotion. */
+    public void recordHuHoBotSuccessfulLogin(Player player) {
+        if (huhobotIntegration != null) huhobotIntegration.recordSuccessfulLogin(player);
+    }
+
+    /** Shows the one-time HuHoBot code in a dialog instead of chat. */
+    public void showHuHoBotResetRequestDialog(Player player, String code, long expiresInMinutes) {
+        if (!isAvailable()) return;
+        try {
+            closeAllDialogs(player);
+            Dialog dialog = huhobotResetRequestDialog.create(player, code, expiresInMinutes);
+            fancyDialogs.getDialogRegistry().register(dialog);
+            activeDialogs.put(player.getUniqueId(), dialog);
+            dialog.open(player);
+        } catch (Exception e) {
+            plugin.getLogger().error("Failed to show HuHoBot recovery code dialog: " + e.getMessage());
+            if (plugin.getConfiguration().get(ConfigurationKeys.DEBUG)) e.printStackTrace();
+        }
     }
 
     /**
@@ -239,7 +277,8 @@ public class DialogManager implements Listener {
                         if (plugin.getConfiguration().get(ConfigurationKeys.DEBUG)) {
                             plugin.getLogger().debug("Redirecting player " + player.getName() + " to email verification dialog (reconnection)");
                         }
-                        showEmailVerificationDialog(player, user, email, true, "您断线重连后回到了邮箱验证界面", "warning");
+                        showEmailVerificationDialog(player, user, email, true,
+                                plugin.getMessages().getRawMessage(MessageKeys.DIALOG_COMMON_EMAIL_RECONNECT.key()), "warning");
                         return;
                     }
                 }
@@ -296,6 +335,25 @@ public class DialogManager implements Listener {
             if (plugin.getConfiguration().get(ConfigurationKeys.DEBUG)) {
                 e.printStackTrace();
             }
+        }
+    }
+
+    /** Shows the new-password form after a HuHoBot recovery code was verified. */
+    public void showHuHoBotPasswordResetDialog(Player player) {
+        showHuHoBotPasswordResetDialog(player, null, null);
+    }
+
+    public void showHuHoBotPasswordResetDialog(Player player, String errorMessage, String errorType) {
+        if (!isAvailable()) return;
+        try {
+            closeAllDialogs(player);
+            Dialog dialog = huhobotPasswordResetDialog.create(player, errorMessage, errorType);
+            fancyDialogs.getDialogRegistry().register(dialog);
+            activeDialogs.put(player.getUniqueId(), dialog);
+            dialog.open(player);
+        } catch (Exception e) {
+            plugin.getLogger().error("Failed to show HuHoBot password reset dialog: " + e.getMessage());
+            if (plugin.getConfiguration().get(ConfigurationKeys.DEBUG)) e.printStackTrace();
         }
     }
 
@@ -993,13 +1051,12 @@ public class DialogManager implements Listener {
     private void registerDialogActions() {
         var actionRegistry = fancyDialogs.getDialogActionRegistry();
 
-        // Create a single shared action handler
-        LibreLoginAction actionHandler = new LibreLoginAction(plugin, this);
-        
         // Core authentication actions
         actionRegistry.registerAction("librelogin_login", actionHandler);
         actionRegistry.registerAction("librelogin_register", actionHandler);
         actionRegistry.registerAction("librelogin_reset_password", actionHandler);
+        actionRegistry.registerAction("librelogin_huhobot_reset", actionHandler);
+        actionRegistry.registerAction("librelogin_huhobot_password_reset", actionHandler);
         
         // Simple button actions (no data)
         actionRegistry.registerAction("librelogin_forgot_password", actionHandler);
@@ -1049,5 +1106,9 @@ public class DialogManager implements Listener {
             plugin.getLogger().debug("Confirmation: librelogin_register_confirm_continue, librelogin_go_email_register");
         }
     }
-}
 
+    public boolean completeConfigurationPhaseRegistration(Player player, User user) {
+        actionHandler.completeConfigurationPhaseRegistration(player, user);
+        return true;
+    }
+}

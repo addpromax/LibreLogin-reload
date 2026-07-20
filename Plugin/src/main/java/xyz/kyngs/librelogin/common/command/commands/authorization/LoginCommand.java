@@ -73,6 +73,10 @@ public class LoginCommand<P> extends AuthorizationCommand<P> {
 
             sender.sendMessage(getMessage("info-logged-in"));
             getAuthorizationProvider().authorize(user, player, AuthenticatedEvent.AuthenticationReason.LOGIN);
+            if (plugin instanceof xyz.kyngs.librelogin.paper.PaperLibreLogin paperPlugin
+                    && player instanceof org.bukkit.entity.Player bukkitPlayer) {
+                paperPlugin.recordHuHoBotSuccessfulLogin(bukkitPlayer);
+            }
         });
     }
 

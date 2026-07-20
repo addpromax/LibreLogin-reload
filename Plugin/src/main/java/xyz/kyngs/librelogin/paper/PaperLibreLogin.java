@@ -41,6 +41,8 @@ public class PaperLibreLogin extends AuthenticLibreLogin<Player, World> {
 
     private final PaperBootstrap bootstrap;
     private PaperListeners listeners;
+    private Object configurationPhaseListener;
+    private GrimIntegration grimIntegration;
     private boolean started;
     private xyz.kyngs.librelogin.paper.dialogs.DialogManager dialogManager;
     private xyz.kyngs.librelogin.paper.inventory.InventoryManager inventoryManager;
@@ -190,6 +192,10 @@ public class PaperLibreLogin extends AuthenticLibreLogin<Player, World> {
 
         var provider = getEventProvider();
 
+        if (pluginPresent("GrimAC")) {
+            grimIntegration = GrimIntegration.create(this);
+        }
+
         provider.subscribe(provider.getTypes().authenticated, event -> {
             var player = event.getPlayer();
             if (player == null) return;
@@ -251,6 +257,19 @@ public class PaperLibreLogin extends AuthenticLibreLogin<Player, World> {
         dialogManager = new xyz.kyngs.librelogin.paper.dialogs.DialogManager(this);
         dialogManager.initialize();
 
+        try {
+            // Register this listener regardless of the current value so the
+            // setting can be toggled with the normal configuration reload.
+            configurationPhaseListener = new ConfigurationPhaseListener(this);
+            Bukkit.getPluginManager().registerEvents((ConfigurationPhaseListener) configurationPhaseListener, bootstrap);
+            if (getConfiguration().get(ConfigurationKeys.FANCYDIALOGS_USE_CONFIGURATION_PHASE)
+                    && getConfiguration().get(ConfigurationKeys.USE_FANCYDIALOGS)) {
+                getLogger().info("Configuration-phase authentication enabled. Players must authenticate before joining.");
+            }
+        } catch (LinkageError error) {
+            getLogger().warn("Configuration-phase authentication requires Paper 1.21.6 or newer; keeping the normal post-join flow.");
+        }
+
         // Initialize InventoryManager for hiding/restoring player inventories
         inventoryManager = new xyz.kyngs.librelogin.paper.inventory.InventoryManager(this);
         inventoryManager.enable(); // Register packet listener
@@ -277,6 +296,17 @@ public class PaperLibreLogin extends AuthenticLibreLogin<Player, World> {
      */
     public xyz.kyngs.librelogin.common.config.AnnouncementManager getAnnouncementManager() {
         return announcementManager;
+    }
+
+    public Object getConfigurationPhaseListener() {
+        return configurationPhaseListener;
+    }
+
+    public long getConfigurationPhaseTimeoutMillis(int configuredSeconds) {
+        long configuredMillis = Math.max(1, configuredSeconds) * 1000L;
+        return grimIntegration == null
+                ? configuredMillis
+                : grimIntegration.limitConfigurationPhaseTimeout(configuredMillis);
     }
 
     @Override
@@ -371,6 +401,10 @@ public class PaperLibreLogin extends AuthenticLibreLogin<Player, World> {
      */
     public xyz.kyngs.librelogin.paper.dialogs.DialogManager getDialogManager() {
         return dialogManager;
+    }
+
+    public void recordHuHoBotSuccessfulLogin(Player player) {
+        if (dialogManager != null) dialogManager.recordHuHoBotSuccessfulLogin(player);
     }
 
     /**

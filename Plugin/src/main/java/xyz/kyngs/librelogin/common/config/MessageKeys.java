@@ -474,6 +474,13 @@ public class MessageKeys {
             ConfigurateHelper::getString
     );
 
+    public static final ConfigurationKey<String> INFO_DISCONNECT = new ConfigurationKey<>(
+            "info-disconnect",
+            "<red>You have been disconnected.</red>",
+            "The message shown when a player chooses the disconnect button. Newlines and MiniMessage formatting are supported.",
+            ConfigurateHelper::getString
+    );
+
     public static final ConfigurationKey<String> INFO_LOGGING_IN = new ConfigurationKey<>(
             "info-logging-in",
             "Logging in...",
@@ -1374,6 +1381,76 @@ public class MessageKeys {
             ConfigurateHelper::getString
     );
 
+    public static final ConfigurationKey<String> DIALOG_BUTTON_HUHOBOT_RESET = new ConfigurationKey<>(
+            "dialog.button.huhobot-reset",
+            "<aqua>通过群机器人找回</aqua>",
+            "The text of the HuHoBot password recovery button in login dialog.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> DIALOG_HUHOBOT_RESET_INSTRUCTION = new ConfigurationKey<>(
+            "dialog.huhobot-reset.instruction",
+            "<yellow>请在绑定的 QQ 群向机器人发送：</yellow>\n<aqua>/找回密码 %code%</aqua>\n<gray>验证码 %minutes% 分钟内有效，验证成功后将打开新密码页面。</gray>",
+            "The instruction shown after requesting HuHoBot password recovery. Use %code% and %minutes% placeholders.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> DIALOG_HUHOBOT_RESET_REQUEST_TITLE = new ConfigurationKey<>(
+            "dialog.huhobot-reset.request-title",
+            "<gradient:#00c6ff:#0072ff>群机器人找回密码</gradient>",
+            "The title of the HuHoBot password recovery instruction dialog.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> DIALOG_HUHOBOT_RESET_TITLE = new ConfigurationKey<>(
+            "dialog.huhobot-reset.title",
+            "<gradient:#fa8231:#f5cd79>设置新密码</gradient>",
+            "The title of the HuHoBot password reset dialog.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> DIALOG_HUHOBOT_RESET_BODY = new ConfigurationKey<>(
+            "dialog.huhobot-reset.body",
+            "<white>验证成功，请输入新的密码。</white>",
+            "The body of the HuHoBot password reset dialog.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> DIALOG_HUHOBOT_RESET_PASSWORD_LABEL = new ConfigurationKey<>(
+            "dialog.huhobot-reset.password-label",
+            "<yellow>新密码</yellow>",
+            "The new password field label for HuHoBot password reset.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> DIALOG_HUHOBOT_RESET_CONFIRM_LABEL = new ConfigurationKey<>(
+            "dialog.huhobot-reset.confirm-label",
+            "<yellow>确认新密码</yellow>",
+            "The password confirmation field label for HuHoBot password reset.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> DIALOG_BUTTON_HUHOBOT_RESET_SUBMIT = new ConfigurationKey<>(
+            "dialog.button.huhobot-reset-submit",
+            "<aqua>设置新密码</aqua>",
+            "The submit button text in the HuHoBot password reset dialog.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> DIALOG_BUTTON_HUHOBOT_RESET_BACK = new ConfigurationKey<>(
+            "dialog.button.huhobot-reset-back",
+            "<gray>返回登录</gray>",
+            "The back button text in the HuHoBot password reset dialog.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> DIALOG_BUTTON_HUHOBOT_REQUEST_BACK = new ConfigurationKey<>(
+            "dialog.button.huhobot-request-back",
+            "<gray>返回登录</gray>",
+            "The back button text in the HuHoBot recovery instruction dialog.",
+            ConfigurateHelper::getString
+    );
+
     public static final ConfigurationKey<String> DIALOG_BUTTON_BACK_TO_LOGIN = new ConfigurationKey<>(
             "dialog.button.back-to-login",
             "<gray>返回登录</gray>",
@@ -1452,6 +1529,111 @@ public class MessageKeys {
             ConfigurateHelper::getString
     );
 
+    public static final ConfigurationKey<String> DIALOG_2FA_SETUP_MAP_INSTRUCTION = new ConfigurationKey<>(
+            "dialog.2fa-setup.map-instruction",
+            "<gray>请使用 Google Authenticator 扫描地图上的二维码</gray>",
+            "The text shown below the 2FA setup dialog while the QR map is being scanned.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> DIALOG_2FA_SETUP_RESCAN_MESSAGE = new ConfigurationKey<>(
+            "dialog.2fa-setup.rescan-message",
+            "<yellow>已重新生成二维码！请重新使用 Google Authenticator 扫描地图上的二维码，然后按 Q 键丢弃地图继续设置！</yellow>",
+            "The message shown after the 2FA QR code is regenerated.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> DIALOG_2FA_SETUP_RESCAN_BUTTON = new ConfigurationKey<>(
+            "dialog.button.rescan-2fa",
+            "<yellow>重新扫码</yellow>",
+            "The text of the button that regenerates the 2FA QR code.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> DIALOG_COMMON_HUHOBOT_UNAVAILABLE = new ConfigurationKey<>(
+            "dialog.common.huhobot-unavailable",
+            "<red>HuHoBot 未启用，无法使用群找回密码。</red>",
+            "Shown when a player clicks HuHoBot recovery while HuHoBot is unavailable.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> DIALOG_COMMON_EMAIL_RECONNECT = new ConfigurationKey<>(
+            "dialog.common.email-reconnect",
+            "您断线重连后回到了邮箱验证界面",
+            "The warning shown when a player reconnects during email verification.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> DIALOG_COMMON_ANNOUNCEMENT_UNAVAILABLE = new ConfigurationKey<>(
+            "dialog.common.announcement-unavailable",
+            "公告配置文件不可用",
+            "Fallback announcement text when the announcement configuration cannot be read.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> DIALOG_COMMON_DISCONNECT = new ConfigurationKey<>(
+            "dialog.common.disconnect",
+            "<red>已断开连接</red>",
+            "Fallback kick message used by the disconnect dialog action.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> DIALOG_COMMON_ERROR_FORMAT = new ConfigurationKey<>(
+            "dialog.common.error-format",
+            "<red>✖ %message%</red>",
+            "Format for errors embedded in dialogs. Use %message% for the actual message.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> DIALOG_COMMON_WARNING_FORMAT = new ConfigurationKey<>(
+            "dialog.common.warning-format",
+            "<yellow>⚠ %message%</yellow>",
+            "Format for warnings embedded in dialogs. Use %message% for the actual message.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> DIALOG_COMMON_SUCCESS_FORMAT = new ConfigurationKey<>(
+            "dialog.common.success-format",
+            "<green>✓ %message%</green>",
+            "Format for success messages embedded in dialogs. Use %message% for the actual message.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> DIALOG_COMMON_UNKNOWN_EMAIL = new ConfigurationKey<>(
+            "dialog.common.unknown-email",
+            "未知",
+            "Fallback value used when the email address is unavailable.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> DIALOG_COMMON_PROFILE_UNAVAILABLE = new ConfigurationKey<>(
+            "dialog.common.profile-unavailable",
+            "<red>无法识别您的玩家资料。</red>",
+            "Configuration-phase disconnect message when the player profile is unavailable.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> DIALOG_COMMON_VERSION_UNSUPPORTED = new ConfigurationKey<>(
+            "dialog.common.version-unsupported",
+            "<red>配置阶段登录需要 Minecraft 1.21.6 或更高版本。</red>",
+            "Configuration-phase disconnect message for unsupported clients.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> DIALOG_COMMON_ACCOUNT_LOAD_FAILED = new ConfigurationKey<>(
+            "dialog.common.account-load-failed",
+            "<red>无法加载您的账户，请重新连接。</red>",
+            "Configuration-phase disconnect message when account loading fails.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> DIALOG_COMMON_CLIENT_UNSUPPORTED = new ConfigurationKey<>(
+            "dialog.common.client-unsupported",
+            "<red>您的客户端不支持配置阶段 Dialog。</red>",
+            "Message shown when the client cannot display configuration-phase dialogs.",
+            ConfigurateHelper::getString
+    );
+
     public static final ConfigurationKey<String> ERROR_2FA_VERIFY_FAILED = new ConfigurationKey<>(
             "error-2fa-verify-failed",
             "<red>验证码错误，请重试！</red>",
@@ -1483,8 +1665,8 @@ public class MessageKeys {
     // Announcement Dialog Messages
     public static final ConfigurationKey<String> DIALOG_ANNOUNCEMENT_TITLE = new ConfigurationKey<>(
             "dialog.announcement.title",
-            "<gradient:gold:yellow><b>服务器公告</b></gradient>",
-            "The title of the announcement dialog.",
+            "%title%",
+            "The title template of the announcement dialog. Use %title% for the title from announcement.yml.",
             ConfigurateHelper::getString
     );
 

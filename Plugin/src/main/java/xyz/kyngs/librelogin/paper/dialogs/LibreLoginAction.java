@@ -62,6 +62,9 @@ public class LibreLoginAction implements DialogAction {
             if ("librelogin_forgot_password".equals(data)) {
                 handleForgotPassword(player);
                 return;
+            } else if ("librelogin_huhobot_reset".equals(data)) {
+                handleHuHoBotReset(player);
+                return;
             } else if ("librelogin_continue_password_reset".equals(data)) {
                 handleContinuePasswordReset(player);
                 return;
@@ -98,6 +101,7 @@ public class LibreLoginAction implements DialogAction {
                 case "librelogin_login" -> handleLogin(player, data);
                 case "librelogin_register" -> handleRegister(player, data);
                 case "librelogin_password_reset" -> handlePasswordReset(player, data);
+                case "librelogin_huhobot_password_reset" -> handleHuHoBotPasswordReset(player, data);
                 case "librelogin_2fa_setup" -> handleTwoFactorSetup(player, data);
                 case "librelogin_email_register" -> handleEmailRegisterSubmit(player, data);
                 case "librelogin_email_verification" -> handleEmailVerify(player, data);
@@ -334,6 +338,7 @@ public class LibreLoginAction implements DialogAction {
         // Authorize player
         manager.closeAllDialogs(player);
         plugin.getAuthorizationProvider().authorize(user, player, AuthenticatedEvent.AuthenticationReason.LOGIN);
+        plugin.getDialogManager().recordHuHoBotSuccessfulLogin(player);
     }
 
     /**
@@ -662,6 +667,65 @@ public class LibreLoginAction implements DialogAction {
         }, 100);
     }
 
+    /** Starts the HuHoBot code flow from the login dialog. */
+    private void handleHuHoBotReset(Player player) {
+        var user = plugin.getDatabaseProvider().getByUUID(player.getUniqueId());
+        if (user == null || !user.isRegistered()) {
+            showError(player, plugin.getMessages().getRawMessage("error-not-registered"));
+            return;
+        }
+        manager.closeAllDialogs(player);
+        manager.beginHuHoBotPasswordReset(player);
+    }
+
+    /** Handles the new-password form after HuHoBot has verified the one-time code. */
+    private void handleHuHoBotPasswordReset(Player player, String data) {
+        var user = plugin.getDatabaseProvider().getByUUID(player.getUniqueId());
+        if (user == null || !user.isRegistered()) {
+            showError(player, plugin.getMessages().getRawMessage("error-not-registered"));
+            return;
+        }
+        String[] parts = parseDataSafe(data, 2);
+        String newPassword = parts[0] == null ? "" : parts[0];
+        String confirm = parts[1] == null ? "" : parts[1];
+        if (newPassword.isEmpty() || confirm.isEmpty()) {
+            manager.showHuHoBotPasswordResetDialog(player, plugin.getMessages().getRawMessage("error-empty-input"), "error");
+            return;
+        }
+        if (!newPassword.equals(confirm)) {
+            manager.showHuHoBotPasswordResetDialog(player, plugin.getMessages().getRawMessage("error-password-not-match"), "error");
+            return;
+        }
+        Integer minLength = plugin.getConfiguration().get(ConfigurationKeys.MINIMUM_PASSWORD_LENGTH);
+        if (minLength > 0 && newPassword.length() < minLength) {
+            manager.showHuHoBotPasswordResetDialog(player,
+                    plugin.getMessages().getRawMessage("error-password-too-short").replace("%length%", String.valueOf(minLength)), "error");
+            return;
+        }
+        if (!plugin.validPassword(newPassword)) {
+            manager.showHuHoBotPasswordResetDialog(player, plugin.getMessages().getRawMessage("error-forbidden-password"), "error");
+            return;
+        }
+        String token = plugin.getAuthorizationProvider().getPasswordResetCache().getIfPresent(player.getUniqueId());
+        if (token == null || token.isEmpty()) {
+            showError(player, plugin.getMessages().getRawMessage("error-wrong-password-reset"));
+            return;
+        }
+        var hashedPassword = plugin.getDefaultCryptoProvider().createHash(newPassword);
+        if (hashedPassword == null) {
+            manager.showHuHoBotPasswordResetDialog(player, plugin.getMessages().getRawMessage("error-password-too-long"), "error");
+            return;
+        }
+        user.setHashedPassword(hashedPassword);
+        user.setLastAuthentication(Timestamp.valueOf(LocalDateTime.now()));
+        user.setIp(plugin.getPlatformHandle().getIP(player));
+        plugin.getDatabaseProvider().updateUser(user);
+        plugin.getAuthorizationProvider().getPasswordResetCache().invalidate(player.getUniqueId());
+        player.sendMessage(Component.text("§a" + plugin.getMessages().getRawMessage("info-password-reset")));
+        manager.closeAllDialogs(player);
+        plugin.getAuthorizationProvider().authorize(user, player, AuthenticatedEvent.AuthenticationReason.LOGIN);
+    }
+
     /**
      * Handles continue password reset action from email status dialog.
      */
@@ -774,16 +838,16 @@ public class LibreLoginAction implements DialogAction {
         manager.closeAllDialogs(player);
         
         // Send disconnect message and kick player immediately
-        String disconnectMessage = plugin.getMessages().getRawMessage("info-disconnect");
-        if (disconnectMessage == null || disconnectMessage.isEmpty()) {
-            disconnectMessage = "§c已断开连接"; // Default disconnect message
+        var disconnectMessage = plugin.getMessages().getMessage("info-disconnect");
+        if (disconnectMessage == null) {
+            disconnectMessage = plugin.getMessages().getMessage(MessageKeys.DIALOG_COMMON_DISCONNECT.key());
         }
-        
-        final String finalDisconnectMessage = disconnectMessage;
+
+        final var finalDisconnectMessage = disconnectMessage;
         // Use scheduler adapter to ensure player kick happens on appropriate thread
         plugin.getScheduler().runEntityTask(plugin.getBootstrap(), player, () -> {
                 if (player.isOnline()) {
-                player.kick(Component.text(finalDisconnectMessage));
+                player.kick(finalDisconnectMessage);
                 }
         });
     }
@@ -990,8 +1054,7 @@ public class LibreLoginAction implements DialogAction {
             showTwoFactorMap(player, totpData);
 
             // 发送重新扫码的提示消息
-            player.sendMessage(net.kyori.adventure.text.Component.text(
-                "§e已重新生成二维码！请重新使用Google Authenticator扫描地图上的二维码，然后按 §eQ键 §a丢弃地图继续设置！"));
+            player.sendMessage(plugin.getMessages().getMessage(MessageKeys.DIALOG_2FA_SETUP_RESCAN_MESSAGE.key()));
 
             if (plugin.getConfiguration().get(ConfigurationKeys.DEBUG)) {
                 plugin.getLogger().debug("✅ Successfully initiated 2FA rescan for player: " + player.getName());
@@ -1632,6 +1695,27 @@ public class LibreLoginAction implements DialogAction {
         // This is the same as handleEmailRegisterWithPassword
         handleEmailRegisterWithPassword(player, data);
     }
+
+    /**
+     * Continues registration after configuration-phase validation. Permission
+     * checks are intentionally performed here because a Bukkit Player now
+     * exists and contains the active permission context.
+     */
+    public void completeConfigurationPhaseRegistration(Player player, User user) {
+        if (shouldForce2FA(player)) {
+            manager.closeAllDialogs(player);
+            start2FASetup(player, user);
+        } else {
+            manager.closeAllDialogs(player);
+            authorizeRegistrationAsync(player, user);
+        }
+    }
+
+    private void authorizeRegistrationAsync(Player player, User user) {
+        xyz.kyngs.librelogin.common.util.GeneralUtil.runAsync(() ->
+                plugin.getAuthorizationProvider().authorize(
+                        user, player, AuthenticatedEvent.AuthenticationReason.REGISTER));
+    }
     
     /**
      * 检查玩家是否需要强制设置2FA
@@ -1664,7 +1748,7 @@ public class LibreLoginAction implements DialogAction {
             if (totpProvider == null) {
                 plugin.getLogger().warn("TOTP Provider not available, skipping 2FA setup for " + player.getName());
                 // 如果TOTP提供者不可用，则直接授权
-                plugin.getAuthorizationProvider().authorize(user, player, AuthenticatedEvent.AuthenticationReason.REGISTER);
+                authorizeRegistrationAsync(player, user);
             return;
         }
         
@@ -1707,7 +1791,7 @@ public class LibreLoginAction implements DialogAction {
                 e.printStackTrace();
             }
             // 如果2FA设置失败，直接授权用户
-            plugin.getAuthorizationProvider().authorize(user, player, AuthenticatedEvent.AuthenticationReason.REGISTER);
+            authorizeRegistrationAsync(player, user);
         }
     }
     
@@ -1752,8 +1836,7 @@ public class LibreLoginAction implements DialogAction {
             mapProjector.project(qrImage, player);
             
             // 发送提示消息
-            player.sendMessage(net.kyori.adventure.text.Component.text(
-                "§a请使用Google Authenticator扫描地图上的二维码，然后按 §eQ键 §a丢弃地图继续设置！"));
+            player.sendMessage(plugin.getMessages().getMessage(MessageKeys.DIALOG_2FA_SETUP_MAP_INSTRUCTION.key()));
             
             if (plugin.getConfiguration().get(ConfigurationKeys.DEBUG)) {
                 plugin.getLogger().debug("✅ Successfully displayed 2FA map for " + player.getName());

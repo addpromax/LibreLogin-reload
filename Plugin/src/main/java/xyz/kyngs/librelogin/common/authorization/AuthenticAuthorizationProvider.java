@@ -309,21 +309,27 @@ public class AuthenticAuthorizationProvider<P, S> extends AuthenticHandler<P, S>
     }
 
     public void startTracking(User user, P player) {
+        startTracking(user, player, true);
+    }
+
+    public void startTracking(User user, P player, boolean showAuthenticationPrompt) {
         var audience = platformHandle.getAudienceForPlayer(player);
 
         unAuthorized.put(player, user.isRegistered());
 
-        // Check if we should use FancyDialogs (Paper only)
-        boolean useFancyDialogs = tryShowFancyDialog(player, user);
+        if (showAuthenticationPrompt) {
+            // Check if we should use FancyDialogs (Paper only)
+            boolean useFancyDialogs = tryShowFancyDialog(player, user);
 
-        if (!useFancyDialogs) {
-            // Use traditional message/title prompts
-            plugin.cancelOnExit(plugin.delay(() -> {
-                if (!unAuthorized.containsKey(player)) return;
+            if (!useFancyDialogs) {
+                // Use traditional message/title prompts
+                plugin.cancelOnExit(plugin.delay(() -> {
+                    if (!unAuthorized.containsKey(player)) return;
+                    sendInfoMessage(user.isRegistered(), audience);
+                }, 250), player);
+
                 sendInfoMessage(user.isRegistered(), audience);
-            }, 250), player);
-
-            sendInfoMessage(user.isRegistered(), audience);
+            }
         }
 
         var limit = plugin.getConfiguration().get(ConfigurationKeys.SECONDS_TO_AUTHORIZE);

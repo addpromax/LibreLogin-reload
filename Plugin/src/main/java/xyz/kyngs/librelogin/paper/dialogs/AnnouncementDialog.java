@@ -74,23 +74,20 @@ public class AnnouncementDialog {
             throw new Exception("AnnouncementManager not available");
         }
 
-        // Get announcement content from yml file
-        String title = announcementManager.getAnnouncementTitle();
-        String bodyText = announcementManager.getAnnouncementContent();
-        
-        // Fallback to message keys if yml content is not available
-        if (title == null) {
-            title = plugin.getMessages().getRawMessage(MessageKeys.DIALOG_ANNOUNCEMENT_TITLE.key());
-        }
-        if (bodyText == null) {
-            String bodyTemplate = plugin.getMessages().getRawMessage(MessageKeys.DIALOG_ANNOUNCEMENT_BODY.key());
-            bodyText = bodyTemplate.replace("%content%", "公告配置文件不可用");
-        }
+        // announcement.yml supplies the data; announcement.conf controls how
+        // that data is presented in the dialog.
+        String announcementTitle = announcementManager.getAnnouncementTitle();
+        String announcementContent = announcementManager.getAnnouncementContent();
+        String title = plugin.getMessages().getRawMessage(MessageKeys.DIALOG_ANNOUNCEMENT_TITLE.key())
+                .replace("%title%", announcementTitle == null ? "" : announcementTitle);
+        String bodyText = plugin.getMessages().getRawMessage(MessageKeys.DIALOG_ANNOUNCEMENT_BODY.key())
+                .replace("%content%", announcementContent == null
+                        ? plugin.getMessages().getRawMessage(MessageKeys.DIALOG_COMMON_ANNOUNCEMENT_UNAVAILABLE.key())
+                        : announcementContent);
         
         // Add error message if present
         if (errorMessage != null && !errorMessage.isEmpty()) {
-            String colorCode = "error".equals(errorType) ? "<red>" : "<yellow>";
-            bodyText = colorCode + errorMessage + "</color>\n\n" + bodyText;
+            bodyText = DialogContent.status(plugin, errorMessage, errorType) + "\n\n" + bodyText;
         }
 
         // Create body list

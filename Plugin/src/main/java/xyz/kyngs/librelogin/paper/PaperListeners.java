@@ -129,7 +129,54 @@ public class PaperListeners extends AuthenticListeners<PaperLibreLogin, Player, 
             return;
         }
         readOnlyUserCache.invalidate(event.getPlayer().getUniqueId());
-        onPostLogin(event.getPlayer(), data);
+        var configurationPhaseReason = consumeConfigurationPhaseAuthentication(event.getPlayer().getUniqueId());
+        if (configurationPhaseReason != null) {
+            var configurationPhaseUser = consumeConfigurationPhaseUser(event.getPlayer().getUniqueId());
+            if (configurationPhaseUser != null) {
+                data = configurationPhaseUser;
+            }
+        }
+        onPostLogin(event.getPlayer(), data, configurationPhaseReason);
+    }
+
+    private User consumeConfigurationPhaseUser(UUID uuid) {
+        Object listener = plugin.getConfigurationPhaseListener();
+        if (listener == null) {
+            return null;
+        }
+        try {
+            Method method = listener.getClass().getMethod("consumeAuthenticatedUser", UUID.class);
+            return (User) method.invoke(listener, uuid);
+        } catch (ReflectiveOperationException ignored) {
+            return null;
+        }
+    }
+
+    private xyz.kyngs.librelogin.api.event.events.AuthenticatedEvent.AuthenticationReason consumeConfigurationPhaseAuthentication(UUID uuid) {
+        Object listener = plugin.getConfigurationPhaseListener();
+        if (listener == null) {
+            return null;
+        }
+        try {
+            Method method = listener.getClass().getMethod("consumeAuthenticationReason", UUID.class);
+            return (xyz.kyngs.librelogin.api.event.events.AuthenticatedEvent.AuthenticationReason) method.invoke(listener, uuid);
+        } catch (ReflectiveOperationException ignored) {
+            return null;
+        }
+    }
+
+    @Override
+    protected boolean handleConfigurationPhaseAuthentication(
+            Player player, User user,
+            xyz.kyngs.librelogin.api.event.events.AuthenticatedEvent.AuthenticationReason reason) {
+        if (reason == xyz.kyngs.librelogin.api.event.events.AuthenticatedEvent.AuthenticationReason.REGISTER) {
+            var dialogManager = plugin.getDialogManager();
+            if (dialogManager != null) {
+                return dialogManager.completeConfigurationPhaseRegistration(player, user);
+            }
+        }
+        GeneralUtil.runAsync(() -> plugin.getAuthorizationProvider().authorize(user, player, reason));
+        return true;
     }
 
     @EventHandler(priority = EventPriority.LOWEST)

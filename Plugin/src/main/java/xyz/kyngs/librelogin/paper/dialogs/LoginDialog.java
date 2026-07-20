@@ -69,15 +69,7 @@ public class LoginDialog {
         
         // Add error message at the top if present
         if (errorMessage != null && !errorMessage.isEmpty()) {
-            String coloredError;
-            if ("warning".equals(errorType)) {
-                // Yellow warning
-                coloredError = "<yellow>⚠ " + errorMessage + "</yellow>\n";
-            } else {
-                // Red error (default)
-                coloredError = "<red>✖ " + errorMessage + "</red>\n";
-            }
-            bodyList.add(new DialogBodyData(coloredError));
+            bodyList.add(new DialogBodyData(DialogContent.status(plugin, errorMessage, errorType)));
         }
         
         bodyList.add(new DialogBodyData(body));
@@ -151,6 +143,20 @@ public class LoginDialog {
             buttons.add(forgotButton);
         }
 
+        // Always expose the HuHoBot recovery action. The action handler gives a
+        // clear message when HuHoBot is not installed or enabled, instead of
+        // silently hiding the recovery option from the login screen.
+        String huhobotButtonText = plugin.getMessages().getRawMessage(MessageKeys.DIALOG_BUTTON_HUHOBOT_RESET.key());
+        List<DialogButton.DialogAction> huhobotActions = new ArrayList<>();
+        huhobotActions.add(new DialogButton.DialogAction("librelogin_huhobot_reset", "librelogin_huhobot_reset"));
+        buttons.add(new DialogButton(
+                huhobotButtonText,
+                null,
+                huhobotActions,
+                new HashMap<>(),
+                150
+        ));
+
         // Disconnect button
         String disconnectButtonText = plugin.getMessages().getRawMessage(MessageKeys.DIALOG_BUTTON_DISCONNECT.key());
         List<DialogButton.DialogAction> disconnectActions = new ArrayList<>();
@@ -179,4 +185,3 @@ public class LoginDialog {
         return manager.getFancyDialogs().createDialog(data);
     }
 }
-

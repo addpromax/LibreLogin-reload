@@ -33,6 +33,7 @@ public class HoconMessages implements Messages {
     private final Map<String, TextComponent> messages;
     private final Logger logger;
     private ConfigurateConfiguration rawMessages;
+    private DialogsConfiguration dialogs;
 
     public HoconMessages(Logger logger) {
         this.logger = logger;
@@ -46,7 +47,13 @@ public class HoconMessages implements Messages {
     @Override
     public TextComponent getMessage(String key, String... replacements) {
 
-        var message = messages.get(key);
+        TextComponent message = messages.get(key);
+        if (dialogs != null) {
+            String dialogValue = dialogs.get(key);
+            if (dialogValue != null) {
+                message = Component.empty().append(SERIALIZER.deserialize(LegacyMessage.fromLegacy(dialogValue, "&")));
+            }
+        }
 
         if (replacements.length == 0) return message;
 
@@ -67,6 +74,7 @@ public class HoconMessages implements Messages {
 
     @Override
     public void reload(LibreLoginPlugin<?, ?> plugin) throws IOException, CorruptedConfigurationException {
+        messages.clear();
         var adept = new ConfigurateConfiguration(
                 plugin.getDataFolder(),
                 "messages.conf",
@@ -80,11 +88,13 @@ public class HoconMessages implements Messages {
                           LibreLogin Messages
                           ----------------------------------------------------------------------------------------
                           This file contains all of the messages used by the plugin, you are welcome to fit it to your needs.
+                          FancyDialogs content is stored separately in the dialogs directory.
                           The messages can be written both in the legacy format and in the MiniMessage format. For example, the following message is completely valid: <bold>&aReloaded!</bold>
                           You can find more information about LibreLogin on the github page:
                           https://github.com/kyngs/LibreLogin
                         """,
                 logger,
+                key -> !key.key().startsWith("dialog."),
                 new FirstMessagesMigrator(),
                 new SecondMessagesMigrator(),
                 new ThirdMessagesMigrator()
@@ -92,6 +102,20 @@ public class HoconMessages implements Messages {
 
         extractKeys("", adept.getHelper().configuration());
         rawMessages = adept;
+
+        Map<String, String> fallbackValues = new HashMap<>();
+        GeneralUtil.extractKeys(MessageKeys.class).stream()
+                .filter(key -> key.key().startsWith("dialog."))
+                .forEach(key -> {
+                    String oldValue = adept.getHelper().getString(key.key());
+                    Object defaultValue = key.defaultValue();
+                    boolean announcementTemplate = key.key().equals(MessageKeys.DIALOG_ANNOUNCEMENT_TITLE.key())
+                            || key.key().equals(MessageKeys.DIALOG_ANNOUNCEMENT_BODY.key());
+                    fallbackValues.put(key.key(), oldValue != null && !announcementTemplate ? oldValue
+                            : defaultValue == null ? "" : String.valueOf(defaultValue));
+                });
+        dialogs = new DialogsConfiguration(plugin.getDataFolder(), logger);
+        dialogs.reload(fallbackValues);
     }
 
     private void extractKeys(String prefix, CommentedConfigurationNode node) {
@@ -111,6 +135,10 @@ public class HoconMessages implements Messages {
     }
 
     public String getRawMessage(String key) {
+        if (dialogs != null) {
+            String dialogValue = dialogs.get(key);
+            if (dialogValue != null) return dialogValue;
+        }
         return rawMessages.getHelper().getString(key);
     }
 }

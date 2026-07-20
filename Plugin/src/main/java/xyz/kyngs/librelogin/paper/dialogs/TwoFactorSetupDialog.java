@@ -82,19 +82,12 @@ public class TwoFactorSetupDialog {
         
         // Add error message at the top if present
         if (errorMessage != null && !errorMessage.isEmpty()) {
-            String coloredError;
-            if ("warning".equals(errorType)) {
-                // Yellow warning
-                coloredError = "<yellow>⚠ " + errorMessage + "</yellow>\n";
-            } else {
-                // Red error (default)
-                coloredError = "<red>✖ " + errorMessage + "</red>\n";
-            }
-            bodyList.add(new DialogBodyData(coloredError));
+            bodyList.add(new DialogBodyData(DialogContent.status(plugin, errorMessage, errorType)));
         }
         
         bodyList.add(new DialogBodyData(body));
-        bodyList.add(new DialogBodyData("\n<gray>请使用Google Authenticator扫描地图上的二维码</gray>\n"));
+        bodyList.add(new DialogBodyData(plugin.getMessages()
+                .getRawMessage(MessageKeys.DIALOG_2FA_SETUP_MAP_INSTRUCTION.key())));
 
         // Create input fields
         List<DialogTextField> textFields = new ArrayList<>();
@@ -139,7 +132,8 @@ public class TwoFactorSetupDialog {
         }
 
         // Rescan QR code button - always add this button
-        String rescanButtonText = "重新扫码";  // TODO: Add to MessageKeys if needed
+        String rescanButtonText = plugin.getMessages()
+                .getRawMessage(MessageKeys.DIALOG_2FA_SETUP_RESCAN_BUTTON.key());
         List<DialogButton.DialogAction> rescanActions = new ArrayList<>();
         // 🔧 修复：直接传递secret作为data，action名称包含前缀用于路由识别
         rescanActions.add(new DialogButton.DialogAction("librelogin_2fa_rescan", "librelogin_2fa_rescan:" + totpData.secret()));
